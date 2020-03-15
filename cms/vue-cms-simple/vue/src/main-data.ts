@@ -3,6 +3,8 @@ export let mainData: MainData = {
     user: null,
     users: [],
     machineConfigs: [],
+    dataLogs: [],
+    errLogs: [],
 }
 
 export interface User {
@@ -19,12 +21,15 @@ export enum AuthType {
 interface MainData {
     user: User | null;
     users: User[];
-    machineConfigs: MachineConfig[]
+    machineConfigs: MachineConfig[];
+    dataLogs: string[];
+    errLogs: string[];
 }
 
 export class MachineConfig {
     constructor(public settingName: string = '', public armSpeed: number | null = null, public partConfigs: PartConfig[]) { }
     public isUsing = false;
+    public id = new Date().getTime();
 }
 export class PartConfig {
     constructor(public partName: string, public axisInfo: AxisInfo, public operationOrder: number) { }

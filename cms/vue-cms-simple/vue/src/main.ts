@@ -6,11 +6,14 @@ import { mainService } from './main-service';
 
 Vue.config.productionTip = false;
 
+
 let dataPreloadP = new Promise(res => {
 
   //空則幫創第一個，否則正常載入
   mainData.users = mainService.GetFromLocalStorage('users') || createUser();
-  mainData.machineConfigs = mainService.GetFromLocalStorage('machineConfigs') || mainData.machineConfigs;//返回預設值:[]
+  mainService.loadDataIn('machineConfigs');
+  mainService.loadDataIn('dataLogs');
+  mainService.loadDataIn('errLogs');
   res();
 });
 

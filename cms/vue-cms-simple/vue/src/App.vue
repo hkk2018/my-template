@@ -2,7 +2,10 @@
   <div id="app">
     <transition mode="out-in" name="fade">
       <LoginVue v-if="!md.user" v-bind="{users:md.users}" />
-      <MainVue v-else v-bind="{users:md.users,user:md.user,machineConfigs:md.machineConfigs}" />
+      <MainVue
+        v-else
+        v-bind="{users:md.users,user:md.user,machineConfigs:md.machineConfigs,dataLogs:md.dataLogs,errLogs:md.errLogs}"
+      />
     </transition>
   </div>
 </template>
@@ -32,6 +35,10 @@ export default Vue.extend({
   //hkk begin
   --main-deep-blue: #3c4b64;
   --border: #d8dbe0;
+  --cyan: #17a2b8;
+  --light-blue: #63c2de;
+  --primary: #20a8d8;
+  --info: #63c2de;
   //hkk end
   --primary-legacy-theme: #321fdb;
   --secondary-legacy-theme: #ced2d8;
@@ -49,7 +56,7 @@ export default Vue.extend({
   --danger-dark-theme: #d16767;
   --light-dark-theme: #20202a;
   --dark-dark-theme: #181924;
-  --primary: #321fdb;
+  // --primary: #321fdb;
   --secondary: #ced2d8;
   --success: #2eb85c;
   --info: #39f;
@@ -143,7 +150,8 @@ button {
   background-color: var(--primary);
 }
 .primaryBut:hover {
-  background-color: #2a1ab9;
+  background-color: #1985ac;
+  border-color: #187da0;
 }
 
 .secondaryBut {
@@ -157,5 +165,37 @@ button {
 // button
 .butSpace {
   margin: 0 0.5rem;
+}
+
+.block {
+  box-shadow: 0 1px 1px 0 rgba(60, 75, 100, 0.14),
+    0 2px 1px -1px rgba(60, 75, 100, 0.12), 0 1px 3px 0 rgba(60, 75, 100, 0.2);
+  background-color: white;
+  .blockTitle {
+    font-weight: bolder;
+    color: var(--main-deep-blue);
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid;
+    border-color: var(--border);
+  }
+  .optionRow {
+    border-bottom: 1px solid;
+    border-color: var(--border);
+    padding: 1rem;
+    display: flex;
+  }
+  .bottomRow {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .optionName {
+    display: flex;
+    align-items: center;
+    width: 6rem;
+  }
+  .optionItem {
+    margin: auto 1rem;
+  }
 }
 </style>

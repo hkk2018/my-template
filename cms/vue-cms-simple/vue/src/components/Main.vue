@@ -24,6 +24,10 @@
             v-else-if="featureEnum['ArmConfig']===currFeture"
             v-bind="{machineConfigs:machineConfigs}"
           />
+          <LogsVue
+            v-else-if="featureEnum['Logs']===currFeture"
+            v-bind="{dataLogs:dataLogs,errLogs:errLogs}"
+          />
         </transition>
       </div>
     </div>
@@ -35,10 +39,12 @@ import Vue from 'vue';
 import PageVue from './pages/Page.vue';
 import MachineConfigVue from './pages/MachineConfig.vue';
 import { mainData } from '../main-data';
+import LogsVue from './pages/Logs.vue';
 
 enum Feature {
   Dashboard,
-  ArmConfig
+  ArmConfig,
+  Logs
 }
 
 function getFeatureArr() {
@@ -51,12 +57,15 @@ export default Vue.extend({
   name: 'Main',
   components: {
     PageVue,
-    MachineConfigVue
+    MachineConfigVue,
+    LogsVue
   },
   props: {
     user: Object,
     users: Array,
-    machineConfigs: Array
+    machineConfigs: Array,
+    dataLogs: Array,
+    errLogs: Array
   }, data() {
     return {
       currFeture: Feature.ArmConfig,
@@ -103,7 +112,7 @@ export default Vue.extend({
   display: flex;
 }
 .sideBox {
-  background-color: var(--main-deep-blue);
+  background-color: #2f353a;
   width: 10rem;
   height: 100%;
 }
@@ -116,11 +125,11 @@ export default Vue.extend({
 }
 
 .sideOption.selected {
-  background: rgba(0, 0, 21, 0.2);
+  background: #3a4248;
 }
 .sideOption:hover {
   color: white;
-  background: var(--primary-legacy-theme);
+  background: var(--primary);
 }
 .pageBox {
   width: 100%;

@@ -82,10 +82,10 @@
         <button
           class="primaryBut butSpace"
           v-if="!currMachineConfig.isUsing"
-          @click="isEdit=false"
+          @click="setAsDeafult()"
         >設為預設</button>
         <button class="secondaryBut butSpace" @click="clickEdit()">編輯</button>
-        <button class="secondaryBut butSpace" style="color:red;" @click="confirmToCreate()">刪除</button>
+        <button class="secondaryBut butSpace" style="color:red;" v-if="!currMachineConfig.isUsing" @click="deleteConfig()">刪除</button>
       </div>
     </div>
   </div>
@@ -115,7 +115,6 @@ export default Vue.extend({
       isEdit: false,
       isUpdate: false,
       currConfigIndex: 0,
-      parts: ['VMZ', 'ORC', 'P1', 'P2', 'P3'],
       tempMachineConfig: null
     }
   },
@@ -156,8 +155,8 @@ export default Vue.extend({
         mainService.alert('設定名未輸入');
         return
       }
-      //若是更新的情況，如果跟原本同名則不進行同名檢查
-      if (isToUpdate ? (!(beforeEditMc.settingName === currMC.settingName)) : mcs.some(mc => mc.settingName === currMC.settingName)) {
+      //若是更新且跟原本同名，則不進行同名檢查
+      if (((isToUpdate && beforeEditMc.settingName === currMC.settingName)) ? false : mcs.some(mc => mc.settingName === currMC.settingName)) {
         mainService.alert('設定名重複');
         return;
       }
@@ -188,19 +187,40 @@ export default Vue.extend({
       }
       let copyMCs: MachineConfig[] = JSON.parse(JSON.stringify(this.machineConfigs));
       if (isToUpdate) {
-        let index = copyMCs.findIndex(mc => mc.settingName === currMC.settingName);
+        let index = copyMCs.findIndex(mc => mc.id === currMC.id);
         copyMCs.splice(index, 1, currMC);
       }
       else copyMCs.push(currMC);
 
       localStorage.setItem('machineConfigs', JSON.stringify(copyMCs));
-      mainService.reloadData('machineConfigs');
+      mainService.loadDataIn('machineConfigs');
       this.isEdit = false;
       this.isUpdate = false;
       mainService.alert('成功');
     },
-    checkInput() { }
-
+    deleteConfig() {
+      let isToDel = mainService.confirm('確定刪除?');
+      let currMC: MachineConfig = this.currMachineConfig;
+      let copyMCs: MachineConfig[] = JSON.parse(JSON.stringify(this.machineConfigs));
+      let index = copyMCs.findIndex(mc => mc.id === currMC.id);
+      copyMCs.splice(index, 1);
+      localStorage.setItem('machineConfigs', JSON.stringify(copyMCs));
+      mainService.loadDataIn('machineConfigs');
+      this.currConfigIndex = 0;
+    },
+    setAsDeafult() {
+      let currMC: MachineConfig = this.currMachineConfig;
+      let copyMCs: MachineConfig[] = JSON.parse(JSON.stringify(this.machineConfigs));
+      let index = copyMCs.findIndex(mc => mc.id === currMC.id);
+      copyMCs.forEach(mc => mc.isUsing = false);
+      copyMCs[index].isUsing = true;
+      mainService.socketEmitP('SET_AS_DEFAULT_MACHINESEETING', currMC).then(() => {
+        localStorage.setItem('machineConfigs', JSON.stringify(copyMCs));
+        mainService.loadDataIn('machineConfigs');
+        this.currConfigIndex = 0;
+        mainService.alert('成功');
+      })
+    },
   },
   computed: {
     indexedMachineConfig(): MachineConfig {
@@ -215,37 +235,7 @@ export default Vue.extend({
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-.block {
-  box-shadow: 0 1px 1px 0 rgba(60, 75, 100, 0.14),
-    0 2px 1px -1px rgba(60, 75, 100, 0.12), 0 1px 3px 0 rgba(60, 75, 100, 0.2);
-  background-color: white;
-}
-.blockTitle {
-  font-weight: bolder;
-  color: var(--main-deep-blue);
-  padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid;
-  border-color: var(--border);
-}
-.optionRow {
-  border-bottom: 1px solid;
-  border-color: var(--border);
-  padding: 1rem;
-  display: flex;
-}
-.bottomRow {
-  display: flex;
-  justify-content: center;
-  padding: 1rem;
-}
-.optionName {
-  display: flex;
-  align-items: center;
-  width: 6rem;
-}
-.optionItem {
-  margin: auto 1rem;
-}
+
 .narrow {
   width: 5rem;
 }
