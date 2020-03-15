@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <LoginVue v-bind="{users:md.users}" />
+    <transition mode="out-in" name="fade">
+      <LoginVue v-if="!md.user" v-bind="{users:md.users}" />
+      <MainVue v-else v-bind="{users:md.users,user:md.user,machineConfigs:md.machineConfigs}" />
+    </transition>
   </div>
 </template>
 
@@ -8,11 +11,13 @@
 import Vue from 'vue';
 import { mainData } from './main-data';
 import LoginVue from './components/Login.vue';
+import MainVue from './components/Main.vue';
 
 export default Vue.extend({
   name: 'App',
   components: {
     LoginVue,
+    MainVue
   },
   data() {
     return {
@@ -24,6 +29,10 @@ export default Vue.extend({
 
 <style lang="scss">
 :root {
+  //hkk begin
+  --main-deep-blue: #3c4b64;
+  --border: #d8dbe0;
+  //hkk end
   --primary-legacy-theme: #321fdb;
   --secondary-legacy-theme: #ced2d8;
   --success-legacy-theme: #2eb85c;
@@ -63,7 +72,8 @@ export default Vue.extend({
 body {
   margin: 0;
   font-size: 14px;
-  color: #3c4b64;
+  color: var(--main-deep-blue);
+  background-color: #ebedef;
 }
 #app {
   font-family: -apple-system, BlinkMacSystemFont, segoe ui, Roboto,
@@ -73,9 +83,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
   height: 100vh;
 }
-input{
-  border:1px solid #d8dbe0;
+
+%gernerlStyle {
+  border: 1px solid var(--border);
   border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
+}
+input {
+  @extend %gernerlStyle;
+}
+input[type="button"] {
+  cursor: pointer;
+}
+select {
+  @extend %gernerlStyle;
+}
+button {
+  @extend %gernerlStyle;
+  transition: 0.2s;
+  cursor: pointer;
 }
 .center {
   display: flex;
@@ -88,12 +114,48 @@ input{
   justify-content: center;
   align-items: center;
 }
+.rightAlign {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
 .noLeftRadius {
-  border-top-left-radius: 0!important;
-  border-bottom-left-radius: 0!important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
 .noRightRadius {
-  border-top-right-radius: 0!important;
-  border-bottom-right-radius: 0!important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+
+.primaryBut {
+  // align-self: flex-end;
+  color: white;
+  border: 0;
+  background-color: var(--primary);
+}
+.primaryBut:hover {
+  background-color: #2a1ab9;
+}
+
+.secondaryBut {
+  color: #4f5d73;
+  background-color: #ced2d8;
+}
+.secondaryBut:hover {
+  filter: brightness(0.95);
+}
+
+// button
+.butSpace {
+  margin: 0 0.5rem;
 }
 </style>

@@ -29,7 +29,13 @@
           </div>
         </div>
         <!-- //不blur,enter可能會觸發連兩次登入 -->
-        <button class="loginConfirmBut" @click=" logIn(); $event.target.blur(); ">Login</button>
+        <div class="rightAlign" style="margin-top: 0.8rem;">
+          <button
+            class="primaryBut"
+            style="padding: 0.375rem 1.5rem;"
+            @click=" logIn(); $event.target.blur(); "
+          >Login</button>
+        </div>
       </div>
       <div class="logoBox centerV">
         <div style="font-size:1.5rem;">Machine Name</div>
@@ -37,9 +43,9 @@
         <div
           style="font-size:0.6rem;font-weight: lighter;"
         >Automation makes the future of manufacturing</div>
-           <br />   <br />
+        <br />
+        <br />
         <div class="cpNameBox">ABC Co.,Ltd.</div>
-             
       </div>
     </div>
   </div>
@@ -53,7 +59,7 @@ import { socket } from "../socket";
 
 
 export default Vue.extend({
-  // name: "Login",
+  name: "Login",
   props: {
     users: Array
   },
@@ -202,32 +208,18 @@ export default Vue.extend({
   height: 1.5rem;
 }
 
-.loginConfirmBut {
-  align-self: flex-end;
-  margin-top: 0.8rem;
-  color: white;
-  border-radius: 0.25rem;
-  border: 0;
-  background-color: var(--primary);
-  padding: 0.375rem 1.5rem;
-  transition: 0.3s;
-}
-.loginConfirmBut:hover {
-  background-color: #2a1ab9;
-}
 .logoBox {
   height: 100%;
   width: 18rem;
   background-color: var(--primary);
   color: white;
 }
-.cpNameBox{
-    // border-radius: .3rem;
-        color:#4F5D70;
-        font-weight: 600;
-    padding: .5rem 1rem;
-    // border:1px    solid  #ebedef;
-    background-color: white;
+.cpNameBox {
+  // border-radius: .3rem;
+  color: #4f5d70;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  // border:1px    solid  #ebedef;
+  background-color: white;
 }
-
 </style>

@@ -1,0 +1,252 @@
+<template>
+  <div class>
+    <div class="block">
+      <div class="blockTitle">
+        系統配置
+        <select name id style="margin-left:2rem" :disabled="isEdit" v-model="currConfigIndex">
+          <option
+            v-for="(mc, index) in machineConfigs"
+            :key="index"
+            :value="index"
+          >{{mc.settingName}}</option>
+        </select>
+        <button class="butSpace secondaryBut" @click="clickAdd" v-if="!isEdit">新增</button>
+      </div>
+      <div class="optionRow">
+        <div class="optionName">Setting Alias</div>
+        <div class="optionItem">
+          <input
+            type="text"
+            placeholder="請輸入設定名"
+            v-model="currMachineConfig.settingName"
+            :disabled="!isEdit"
+          />
+        </div>
+      </div>
+      <div class="optionRow">
+        <div class="optionName">Arm Speed</div>
+        <div class="optionItem">
+          <input
+            type="text"
+            placeholder="請輸入手臂速度：1~5"
+            v-model.number="currMachineConfig.armSpeed"
+            :disabled="!isEdit"
+          />
+        </div>
+      </div>
+      <div
+        class="optionRow"
+        v-for="(partConfig, index) in currMachineConfig.partConfigs"
+        :key="index"
+      >
+        <div class="optionName">{{partConfig.partName}}</div>
+        <div class="optionItem">
+          <span>順序：</span>
+          <select name id v-model="partConfig.operationOrder" :disabled="!isEdit">
+            <option v-for="(int, index1) in 5" :key="index1" :value="int">{{int}}</option>
+          </select>
+        </div>
+        <div class="optionItem">
+          <input
+            type="text"
+            placeholder="X：1~5"
+            class="narrow"
+            v-model.number="partConfig.axisInfo.x"
+            :disabled="!isEdit"
+          />
+        </div>
+        <div class="optionItem">
+          <input
+            type="text"
+            placeholder="Y：1~5"
+            class="narrow"
+            v-model.number="partConfig.axisInfo.y"
+            :disabled="!isEdit"
+          />
+        </div>
+        <div class="optionItem">
+          <input
+            type="text"
+            placeholder="Z：1~5"
+            class="narrow"
+            v-model.number="partConfig.axisInfo.z"
+            :disabled="!isEdit"
+          />
+        </div>
+      </div>
+      <div class="bottomRow" v-if="isEdit">
+        <button class="primaryBut butSpace" @click="confirmEdit(isUpdate)">確定</button>
+        <button class="secondaryBut butSpace" @click="isEdit=false;isUpdate=false">取消</button>
+      </div>
+      <div class="bottomRow" v-else>
+        <button
+          class="primaryBut butSpace"
+          v-if="!currMachineConfig.isUsing"
+          @click="isEdit=false"
+        >設為預設</button>
+        <button class="secondaryBut butSpace" @click="clickEdit()">編輯</button>
+        <button class="secondaryBut butSpace" style="color:red;" @click="confirmToCreate()">刪除</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue';
+import { mainService } from '../../main-service';
+import { MachineConfig, PartConfig, AxisInfo } from '../../main-data';
+
+// issues
+// https://github.com/vuejs/vue/issues/9873
+
+enum editType {
+  add,
+  update,
+  onlyView
+}
+
+export default Vue.extend({
+  name: 'MachineConfig',
+  props: {
+    machineConfigs: Array,
+  },
+  data(): any {
+    return {
+      isEdit: false,
+      isUpdate: false,
+      currConfigIndex: 0,
+      parts: ['VMZ', 'ORC', 'P1', 'P2', 'P3'],
+      tempMachineConfig: null
+    }
+  },
+  mounted() {
+    console.log(this)
+  },
+  methods: {
+    createNewConfigData(): any {
+      let partNames = ['VMZ', 'ORC', 'P1', 'P2', 'P3'];
+      let pcArr = [];
+      for (let i = 0; i < partNames.length; i++) {
+        pcArr.push(new PartConfig(partNames[i], new AxisInfo(), i + 1));
+      };
+      return new MachineConfig(undefined, undefined, pcArr)
+    },
+    clickAdd() {
+      this.tempMachineConfig = this.createNewConfigData();
+      this.isEdit = true;
+    },
+    clickEdit() {
+      this.tempMachineConfig = JSON.parse(JSON.stringify(this.currMachineConfig));
+      this.isEdit = true;
+      this.isUpdate = true
+    },
+    confirmEdit(isToUpdate: Boolean = false) {
+      let currMC: MachineConfig = this.currMachineConfig;//此時是temp
+      let beforeEditMc: MachineConfig = this.indexedMachineConfig;
+      let mcs: MachineConfig[] = this.machineConfigs;
+      let armSpeedRange = {
+        max: 5,
+        min: 1
+      }
+      let axisRange = {
+        max: 5,
+        min: 1
+      }
+      if (!currMC.settingName) {
+        mainService.alert('設定名未輸入');
+        return
+      }
+      //若是更新的情況，如果跟原本同名則不進行同名檢查
+      if (isToUpdate ? (!(beforeEditMc.settingName === currMC.settingName)) : mcs.some(mc => mc.settingName === currMC.settingName)) {
+        mainService.alert('設定名重複');
+        return;
+      }
+      if (typeof currMC.armSpeed != 'number' || currMC.armSpeed > armSpeedRange.max || currMC.armSpeed < armSpeedRange.min) {
+        mainService.alert(`手臂數值輸入錯誤`);
+        return;
+      }
+      let orders = [1, 2, 3, 4, 5];
+      currMC.partConfigs.forEach(pc => {
+        let i = orders.indexOf(pc.operationOrder);
+        if (i != -1) orders.splice(i, 1)
+      });
+
+      if (orders.length != 0) {
+        mainService.alert(`順序輸入錯誤`);
+        return
+      };
+
+      for (let index in currMC.partConfigs) {
+        let pc = currMC.partConfigs[index];
+        for (let key in pc.axisInfo) {
+          let axisAmount: number = (pc.axisInfo as any)[key];
+          if (typeof axisAmount != 'number' || axisAmount > axisRange.max || axisAmount < axisRange.min) {
+            mainService.alert(`${pc.partName}數值輸入錯誤`);
+            return
+          }
+        }
+      }
+      let copyMCs: MachineConfig[] = JSON.parse(JSON.stringify(this.machineConfigs));
+      if (isToUpdate) {
+        let index = copyMCs.findIndex(mc => mc.settingName === currMC.settingName);
+        copyMCs.splice(index, 1, currMC);
+      }
+      else copyMCs.push(currMC);
+
+      localStorage.setItem('machineConfigs', JSON.stringify(copyMCs));
+      mainService.reloadData('machineConfigs');
+      this.isEdit = false;
+      this.isUpdate = false;
+      mainService.alert('成功');
+    },
+    checkInput() { }
+
+  },
+  computed: {
+    indexedMachineConfig(): MachineConfig {
+      return (this.machineConfigs[this.currConfigIndex] || {});
+    },
+    currMachineConfig(): MachineConfig {
+      return this.isEdit ? this.tempMachineConfig : this.indexedMachineConfig;
+    }
+  },
+});
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="scss">
+.block {
+  box-shadow: 0 1px 1px 0 rgba(60, 75, 100, 0.14),
+    0 2px 1px -1px rgba(60, 75, 100, 0.12), 0 1px 3px 0 rgba(60, 75, 100, 0.2);
+  background-color: white;
+}
+.blockTitle {
+  font-weight: bolder;
+  color: var(--main-deep-blue);
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid;
+  border-color: var(--border);
+}
+.optionRow {
+  border-bottom: 1px solid;
+  border-color: var(--border);
+  padding: 1rem;
+  display: flex;
+}
+.bottomRow {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+.optionName {
+  display: flex;
+  align-items: center;
+  width: 6rem;
+}
+.optionItem {
+  margin: auto 1rem;
+}
+.narrow {
+  width: 5rem;
+}
+</style>
