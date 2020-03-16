@@ -28,6 +28,7 @@
             v-else-if="featureEnum['Logs']===currFeture"
             v-bind="{dataLogs:dataLogs,errLogs:errLogs}"
           />
+          <!-- VMZ設定 -->
         </transition>
       </div>
     </div>

@@ -13,7 +13,7 @@
         <button class="butSpace secondaryBut" @click="clickAdd" v-if="!isEdit">新增</button>
       </div>
       <div class="optionRow">
-        <div class="optionName">Setting Alias</div>
+        <div class="optionName">Recipe名稱</div>
         <div class="optionItem">
           <input
             type="text"
@@ -24,7 +24,7 @@
         </div>
       </div>
       <div class="optionRow">
-        <div class="optionName">Arm Speed</div>
+        <div class="optionName">手臂速度</div>
         <div class="optionItem">
           <input
             type="text"
@@ -85,7 +85,7 @@
           @click="setAsDeafult()"
         >設為預設</button>
         <button class="secondaryBut butSpace" @click="clickEdit()">編輯</button>
-        <button class="secondaryBut butSpace" style="color:red;" v-if="!currMachineConfig.isUsing" @click="deleteConfig()">刪除</button>
+        <button class="secondaryBut butSpace" v-if="!currMachineConfig.isUsing" @click="deleteConfig()">刪除</button>
       </div>
     </div>
   </div>
@@ -152,16 +152,16 @@ export default Vue.extend({
         min: 1
       }
       if (!currMC.settingName) {
-        mainService.alert('設定名未輸入');
+        mainService.alert('名稱未輸入');
         return
       }
       //若是更新且跟原本同名，則不進行同名檢查
       if (((isToUpdate && beforeEditMc.settingName === currMC.settingName)) ? false : mcs.some(mc => mc.settingName === currMC.settingName)) {
-        mainService.alert('設定名重複');
+        mainService.alert('名稱重複');
         return;
       }
       if (typeof currMC.armSpeed != 'number' || currMC.armSpeed > armSpeedRange.max || currMC.armSpeed < armSpeedRange.min) {
-        mainService.alert(`手臂數值輸入錯誤`);
+        mainService.alert(`手臂速度請輸入數字`);
         return;
       }
       let orders = [1, 2, 3, 4, 5];
@@ -171,7 +171,7 @@ export default Vue.extend({
       });
 
       if (orders.length != 0) {
-        mainService.alert(`順序輸入錯誤`);
+        mainService.alert(`順序重複`);
         return
       };
 
@@ -180,7 +180,7 @@ export default Vue.extend({
         for (let key in pc.axisInfo) {
           let axisAmount: number = (pc.axisInfo as any)[key];
           if (typeof axisAmount != 'number' || axisAmount > axisRange.max || axisAmount < axisRange.min) {
-            mainService.alert(`${pc.partName}數值輸入錯誤`);
+            mainService.alert(`${pc.partName}參數不能為空白，且需為數字`);
             return
           }
         }

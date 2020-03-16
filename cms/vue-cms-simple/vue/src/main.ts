@@ -27,7 +27,7 @@ dataPreloadP.then(() => {
 
 // 創建第一筆資料
 function createUser() {
-  let u: User = { accountName: 'root', password: 'a123456', auth: AuthType.root }
+  let u: User = { accountName: 'user', password: '123456', auth: AuthType.root }
   let users = [u];
   localStorage.setItem('users', JSON.stringify(users));
   return mainService.GetFromLocalStorage('users')

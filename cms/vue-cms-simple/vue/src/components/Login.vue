@@ -38,14 +38,14 @@
         </div>
       </div>
       <div class="logoBox centerV">
-        <div style="font-size:1.5rem;">Machine Name</div>
+        <div style="font-size:1.5rem;">VMZ N100</div>
         <br />
         <div
           style="font-size:0.6rem;font-weight: lighter;"
         >Automation makes the future of manufacturing</div>
         <br />
         <br />
-        <div class="cpNameBox">ABC Co.,Ltd.</div>
+        <div class="cpNameBox">HHC Auto Co.,Ltd.</div>
       </div>
     </div>
   </div>
