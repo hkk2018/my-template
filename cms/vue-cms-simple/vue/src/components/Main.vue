@@ -19,15 +19,17 @@
       </div>
       <div class="pageBox">
         <transition name="fade" mode="out-in">
-          <PageVue v-if="featureEnum['Dashboard']===currFeture" />
+          <PageVue v-if="featureEnum['儀表板']===currFeture" />
           <MachineConfigVue
-            v-else-if="featureEnum['ArmConfig']===currFeture"
+            v-else-if="featureEnum['系統配置']===currFeture"
             v-bind="{machineConfigs:machineConfigs}"
           />
           <LogsVue
-            v-else-if="featureEnum['Logs']===currFeture"
+            v-else-if="featureEnum['系統訊息']===currFeture"
             v-bind="{dataLogs:dataLogs,errLogs:errLogs}"
           />
+          <AccountsVue v-else-if="featureEnum['帳戶管理']===currFeture" v-bind="{users:users}" />
+          <VmzSettingVue v-else-if="featureEnum['VMZ設定']===currFeture" v-bind="{users:users}" />
           <!-- VMZ設定 -->
         </transition>
       </div>
@@ -41,11 +43,15 @@ import PageVue from './pages/Page.vue';
 import MachineConfigVue from './pages/MachineConfig.vue';
 import { mainData } from '../main-data';
 import LogsVue from './pages/Logs.vue';
+import AccountsVue from './pages/Accounts.vue';
+import VmzSettingVue from './pages/VmzSetting.vue';
 
 enum Feature {
-  Dashboard,
-  ArmConfig,
-  Logs
+  儀表板,
+  系統配置,
+  系統訊息,
+  帳戶管理,
+  VMZ設定
 }
 
 function getFeatureArr() {
@@ -59,7 +65,9 @@ export default Vue.extend({
   components: {
     PageVue,
     MachineConfigVue,
-    LogsVue
+    LogsVue,
+    AccountsVue,
+    VmzSettingVue
   },
   props: {
     user: Object,
@@ -69,7 +77,7 @@ export default Vue.extend({
     errLogs: Array
   }, data() {
     return {
-      currFeture: Feature.ArmConfig,
+      currFeture: Feature.系統配置,
       features: getFeatureArr(),
       featureEnum: Feature
     }
@@ -135,5 +143,6 @@ export default Vue.extend({
 .pageBox {
   width: 100%;
   padding: 2rem;
+  overflow: auto;
 }
 </style>

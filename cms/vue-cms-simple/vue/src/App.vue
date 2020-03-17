@@ -78,9 +78,9 @@ export default Vue.extend({
 
 body {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.9rem;
   color: var(--main-deep-blue);
-  background-color: #ebedef;
+  background-color: var(--light-legacy-theme);
 }
 #app {
   font-family: -apple-system, BlinkMacSystemFont, segoe ui, Roboto,
@@ -110,6 +110,13 @@ button {
   transition: 0.2s;
   cursor: pointer;
 }
+// margin collapse
+.antiMC {
+  border: 1px solid transparent;
+}
+.fullH {
+  height: 99%;//prevent accidentally make parent produce vertical scroll bar
+}
 .center {
   display: flex;
   justify-content: center;
@@ -121,9 +128,24 @@ button {
   justify-content: center;
   align-items: center;
 }
+//為了讓子元素之一正確地以fullH填滿剩餘垂直空間
+.splitV {
+  display: flex;
+  flex-direction: column;
+}
 .rightAlign {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+}
+.leftAlign {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.sidesAlign {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 .noLeftRadius {
@@ -197,5 +219,19 @@ button {
   .optionItem {
     margin: auto 1rem;
   }
+}
+
+table {
+  border: 1px solid var(--secondary);
+  border-collapse: collapse;
+}
+th {
+  border: 1px solid var(--secondary);
+  border-bottom-width: 2px;
+  padding: 0.5rem;
+}
+td {
+  border: 1px solid var(--secondary);
+  padding: 0.5rem;
 }
 </style>

@@ -7,10 +7,11 @@ export let mainData: MainData = {
     errLogs: [],
 }
 
-export interface User {
-    accountName: string;
-    password: string;
-    auth: AuthType
+export class User {
+    constructor(public accountName: string, public password: string, public auth: AuthType = AuthType.basic) {
+    }
+    id: number = new Date().getTime();
+    lastLognT: Date | null = null
 }
 
 export enum AuthType {

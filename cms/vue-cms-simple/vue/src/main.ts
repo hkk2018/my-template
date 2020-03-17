@@ -7,13 +7,14 @@ import { mainService } from './main-service';
 Vue.config.productionTip = false;
 
 
+
 let dataPreloadP = new Promise(res => {
 
   //空則幫創第一個，否則正常載入
-  mainData.users = mainService.GetFromLocalStorage('users') || createUser();
-  mainService.loadDataIn('machineConfigs');
-  mainService.loadDataIn('dataLogs');
-  mainService.loadDataIn('errLogs');
+  mainData.users = mainService.GetFromLocalStorage('users') || createRootUser();
+  mainService.loadDataInFromLS('machineConfigs');
+  mainService.loadDataInFromLS('dataLogs');
+  mainService.loadDataInFromLS('errLogs');
   res();
 });
 
@@ -25,10 +26,11 @@ dataPreloadP.then(() => {
 })
 
 
-// 創建第一筆資料
-function createUser() {
-  let u: User = { accountName: 'user', password: '123456', auth: AuthType.root }
+// 創建第一筆
+function createRootUser() {
+  let u: User = new User('admin', '123456', AuthType.root);
+  u.lastLognT = new Date();
   let users = [u];
-  localStorage.setItem('users', JSON.stringify(users));
+  mainService.saveDataToLS('users',users);
   return mainService.GetFromLocalStorage('users')
 }

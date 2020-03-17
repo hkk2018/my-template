@@ -85,7 +85,11 @@
           @click="setAsDeafult()"
         >設為預設</button>
         <button class="secondaryBut butSpace" @click="clickEdit()">編輯</button>
-        <button class="secondaryBut butSpace" v-if="!currMachineConfig.isUsing" @click="deleteConfig()">刪除</button>
+        <button
+          class="secondaryBut butSpace"
+          v-if="!currMachineConfig.isUsing"
+          @click="deleteConfig()"
+        >刪除</button>
       </div>
     </div>
   </div>
@@ -192,8 +196,8 @@ export default Vue.extend({
       }
       else copyMCs.push(currMC);
 
-      localStorage.setItem('machineConfigs', JSON.stringify(copyMCs));
-      mainService.loadDataIn('machineConfigs');
+      mainService.saveDataToLS('machineConfigs', copyMCs);
+      mainService.loadDataInFromLS('machineConfigs');
       this.isEdit = false;
       this.isUpdate = false;
       mainService.alert('成功');
@@ -204,8 +208,8 @@ export default Vue.extend({
       let copyMCs: MachineConfig[] = JSON.parse(JSON.stringify(this.machineConfigs));
       let index = copyMCs.findIndex(mc => mc.id === currMC.id);
       copyMCs.splice(index, 1);
-      localStorage.setItem('machineConfigs', JSON.stringify(copyMCs));
-      mainService.loadDataIn('machineConfigs');
+      mainService.saveDataToLS('machineConfigs', copyMCs);
+      mainService.loadDataInFromLS('machineConfigs');
       this.currConfigIndex = 0;
     },
     setAsDeafult() {
@@ -215,8 +219,8 @@ export default Vue.extend({
       copyMCs.forEach(mc => mc.isUsing = false);
       copyMCs[index].isUsing = true;
       mainService.socketEmitP('SET_AS_DEFAULT_MACHINESEETING', currMC).then(() => {
-        localStorage.setItem('machineConfigs', JSON.stringify(copyMCs));
-        mainService.loadDataIn('machineConfigs');
+        mainService.saveDataToLS('machineConfigs', copyMCs);
+        mainService.loadDataInFromLS('machineConfigs');
         this.currConfigIndex = 0;
         mainService.alert('成功');
       })
@@ -235,7 +239,6 @@ export default Vue.extend({
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-
 .narrow {
   width: 5rem;
 }

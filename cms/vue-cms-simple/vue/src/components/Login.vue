@@ -56,7 +56,7 @@ import Vue from "vue";
 // import { mainFrontService as mfs, mainFrontService } from "../main-front.service";
 import { mainData, User, AuthType } from "../main-data";
 import { socket } from "../socket";
-
+import { mainService } from '../main-service';
 
 export default Vue.extend({
   name: "Login",
@@ -85,10 +85,10 @@ export default Vue.extend({
         alert('密碼錯誤');
         return
       }
+      theUser.lastLognT = new Date();
+      mainService.saveDataToLS('users', users);
       //登入
       mainData.user = theUser;
-
-
     },
     onKeyDown(event: KeyboardEvent) {
       if (event.keyCode === 13) this.logIn()

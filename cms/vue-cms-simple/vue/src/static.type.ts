@@ -1,4 +1,4 @@
-type dataName = 'users' | 'machineConfigs'|'dataLogs'|'errLogs';
+type DataName = 'users' | 'machineConfigs'|'dataLogs'|'errLogs';
 
 type ServerEvent='SET_AS_DEFAULT_MACHINESEETING';
 

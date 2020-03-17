@@ -6,11 +6,10 @@
 import Vue from 'vue';
 
 export default Vue.extend({
-  name: 'Page',
+  name: 'VmzSetting',
   props: {
-    names: Array,
-  },
-  data() {
+    title: String,
+  }, data() {
     return {
 
     }
