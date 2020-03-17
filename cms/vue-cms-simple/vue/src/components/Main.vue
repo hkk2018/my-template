@@ -11,25 +11,26 @@
       <div class="sideBox">
         <div
           class="sideOption"
-          v-for="(ft, index) in features"
+          v-for="(fName, index) in featureNames"
           :key="index"
-          @click="currFeture=featureEnum[ft]"
-          :class="{selected:currFeture===featureEnum[ft]}"
-        >{{ft}}</div>
+          @click="currFeature=featureEnum[fName]"
+          :class="{selected:currFeature===featureEnum[fName]}"
+          v-show="!('帳戶管理'===fName&&user.auth!==authEnum.root)"
+        >{{fName}}</div>
       </div>
       <div class="pageBox">
         <transition name="fade" mode="out-in">
-          <PageVue v-if="featureEnum['儀表板']===currFeture" />
+          <PageVue v-if="featureEnum['儀表板']===currFeature" />
           <MachineConfigVue
-            v-else-if="featureEnum['系統配置']===currFeture"
+            v-else-if="featureEnum['系統配置']===currFeature"
             v-bind="{machineConfigs:machineConfigs}"
           />
           <LogsVue
-            v-else-if="featureEnum['系統訊息']===currFeture"
+            v-else-if="featureEnum['系統訊息']===currFeature"
             v-bind="{dataLogs:dataLogs,errLogs:errLogs}"
           />
-          <AccountsVue v-else-if="featureEnum['帳戶管理']===currFeture" v-bind="{users:users}" />
-          <VmzSettingVue v-else-if="featureEnum['VMZ設定']===currFeture" v-bind="{users:users}" />
+          <AccountsVue v-else-if="featureEnum['帳戶管理']===currFeature" v-bind="{users:users}" />
+          <VmzSettingVue v-else-if="featureEnum['VMZ設定']===currFeature" v-bind="{users:users}" />
           <!-- VMZ設定 -->
         </transition>
       </div>
@@ -41,7 +42,7 @@
 import Vue from 'vue';
 import PageVue from './pages/Page.vue';
 import MachineConfigVue from './pages/MachineConfig.vue';
-import { mainData } from '../main-data';
+import { mainData, AuthType } from '../main-data';
 import LogsVue from './pages/Logs.vue';
 import AccountsVue from './pages/Accounts.vue';
 import VmzSettingVue from './pages/VmzSetting.vue';
@@ -54,7 +55,7 @@ enum Feature {
   VMZ設定
 }
 
-function getFeatureArr() {
+function getFeatureNameArr() {
   let arr = [];
   for (let member in Feature) if (isNaN(parseInt(member, 10))) arr.push(member);
   return arr;
@@ -77,14 +78,15 @@ export default Vue.extend({
     errLogs: Array
   }, data() {
     return {
-      currFeture: Feature.系統配置,
-      features: getFeatureArr(),
-      featureEnum: Feature
+      currFeature: Feature.系統配置,
+      featureNames: getFeatureNameArr(),
+      featureEnum: Feature,
+      authEnum:AuthType
     }
   }, mounted() {
     // setInterval(() => {
     //   this.a =! this.a;
-
+    console.log(this)
     // }, 2000)
   },
   methods: {
