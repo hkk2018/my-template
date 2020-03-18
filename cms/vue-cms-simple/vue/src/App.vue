@@ -7,6 +7,19 @@
         v-bind="{users:md.users,user:md.user,machineConfigs:md.machineConfigs,dataLogs:md.dataLogs,errLogs:md.errLogs}"
       />
     </transition>
+    <ModalVue
+      v-bind="{
+      isShowModal:modalConfig.isShowModal,
+      isConfirm:modalConfig.isConfirm,
+      title:modalConfig.title,
+      body:modalConfig.body,
+      resFunc:modalConfig.resFunc
+      }"
+      @on-modal-close="onModalClose"
+    />
+    <transition mode="out-in" name="fade">
+      <div v-if="informConfig.isInform" class="informBox">{{informConfig.msg}}</div>
+    </transition>
   </div>
 </template>
 
@@ -15,22 +28,70 @@ import Vue from 'vue';
 import { mainData } from './main-data';
 import LoginVue from './components/Login.vue';
 import MainVue from './components/Main.vue';
+import ModalVue from './components/elements/Modal.vue';
 
 export default Vue.extend({
   name: 'App',
   components: {
     LoginVue,
-    MainVue
+    MainVue,
+    ModalVue
   },
   data() {
     return {
-      md: mainData
+      md: mainData,
+      //因為login就要用到所以在最上的層級
+      modalConfig: {
+        isShowModal: false,
+        isConfirm: false,
+        title: null,
+        body: null,
+        resFunc: null,
+      },
+      informConfig: {
+        isInform: false,
+        informP: Promise.resolve(),
+        msg: ''
+      }
+    }
+  },
+  methods: {
+    onModalClose() {
+      this.modalConfig.isShowModal = false;
+    },
+    inform(str: string) {
+      this.informConfig.msg = str;
+      this.informConfig.informP = this.informConfig.informP.then(() => {
+        return new Promise((res, rej) => {
+          this.informConfig.isInform = true;
+          setTimeout(() => {
+            this.informConfig.isInform = false;
+            setTimeout(res, 500);
+          }, 1500);
+        })
+      })
     }
   },
 });
 </script>
 
 <style lang="scss">
+//唯一例外專屬於此層的class
+.informBox {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  padding: 0.75rem 2rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  margin: 1rem;
+  background-color: #dbf2e3;
+  border-color: #cdedd8;
+  color: #28623c;
+  opacity: 0.9;
+  font-size: 1.3rem;
+}
+
 :root {
   //hkk begin
   --main-deep-blue: #3c4b64;
@@ -39,6 +100,7 @@ export default Vue.extend({
   --light-blue: #63c2de;
   --primary: #20a8d8;
   --info: #63c2de;
+  --light: #f0f3f5;
   //hkk end
   --primary-legacy-theme: #321fdb;
   --secondary-legacy-theme: #ced2d8;
@@ -62,7 +124,7 @@ export default Vue.extend({
   --info: #39f;
   --warning: #f9b115;
   --danger: #e55353;
-  --light: #ebedef;
+  // --light: #ebedef;
   --dark: #636f83;
   --breakpoint-xs: 0;
   --breakpoint-sm: 576px;
@@ -79,7 +141,8 @@ export default Vue.extend({
 body {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--main-deep-blue);
+  color: #23282c;
+  // color: var(--main-deep-blue);
   background-color: var(--light-legacy-theme);
 }
 #app {
@@ -115,7 +178,7 @@ button {
   border: 1px solid transparent;
 }
 .fullH {
-  height: 99%;//prevent accidentally make parent produce vertical scroll bar
+  height: 99%; //prevent accidentally make parent produce vertical scroll bar
 }
 .center {
   display: flex;
@@ -199,6 +262,7 @@ button {
     padding: 0.75rem 1.25rem;
     border-bottom: 1px solid;
     border-color: var(--border);
+    background-color: var(--light);
   }
   .optionRow {
     border-bottom: 1px solid;

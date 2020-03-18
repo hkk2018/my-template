@@ -136,13 +136,15 @@ export default Vue.extend({
       this.isEditPs = false;
     },
     deleteAccount() {
-      let isToDel = mainService.confirm(`確定刪除 ${this.currUser.accountName} ?`);
-      if (isToDel) {
-        let users: User[] = this.users as any;
-        users.splice(users.findIndex(u => u.id === this.currUser.id), 1);
-        mainService.saveDataToLS('users', this.users);
-        mainService.inform('刪除成功');
-      }
+      mainService.confirm(`確定刪除 ${this.currUser.accountName} ?`).then(isToDel => {
+        if (isToDel) {
+          let users: User[] = this.users as any;
+          users.splice(users.findIndex(u => u.id === this.currUser.id), 1);
+          mainService.saveDataToLS('users', this.users);
+          mainService.inform('刪除成功');
+        }
+      });
+
     }
   },
   computed: {

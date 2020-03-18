@@ -97,7 +97,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { mainService } from '../../main-service';
+import { mainService, CreateType } from '../../main-service';
 import { MachineConfig, PartConfig, AxisInfo } from '../../main-data';
 
 // issues
@@ -123,16 +123,10 @@ export default Vue.extend({
     }
   },
   mounted() {
-    console.log(this)
   },
   methods: {
     createNewConfigData(): any {
-      let partNames = ['VMZ', 'ORC', 'P1', 'P2', 'P3'];
-      let pcArr = [];
-      for (let i = 0; i < partNames.length; i++) {
-        pcArr.push(new PartConfig(partNames[i], new AxisInfo(), i + 1));
-      };
-      return new MachineConfig(undefined, undefined, pcArr)
+      return mainService.createMachineConfig(CreateType.null);
     },
     clickAdd() {
       this.tempMachineConfig = this.createNewConfigData();
@@ -198,19 +192,31 @@ export default Vue.extend({
 
       mainService.saveDataToLS('machineConfigs', copyMCs);
       mainService.loadDataInFromLS('machineConfigs');
-      this.isEdit = false;
-      this.isUpdate = false;
-      mainService.alert('成功');
+      //vue要一禎的時間更新吧
+      if (!isToUpdate) setTimeout(() => {
+        this.currConfigIndex = (this.machineConfigs as MachineConfig[]).findIndex(mc => mc.id === currMC.id);
+        this.isEdit = false;
+        this.isUpdate = false;
+        mainService.inform('成功');
+      }, 50);
     },
     deleteConfig() {
-      let isToDel = mainService.confirm('確定刪除?');
       let currMC: MachineConfig = this.currMachineConfig;
-      let copyMCs: MachineConfig[] = JSON.parse(JSON.stringify(this.machineConfigs));
-      let index = copyMCs.findIndex(mc => mc.id === currMC.id);
-      copyMCs.splice(index, 1);
-      mainService.saveDataToLS('machineConfigs', copyMCs);
-      mainService.loadDataInFromLS('machineConfigs');
-      this.currConfigIndex = 0;
+      if (currMC.isUsing) {
+        mainService.alert(`使用中配置不得刪除`);
+        return;
+      }
+      mainService.confirm('確定刪除?').then(isToDel => {
+        if (isToDel) {
+
+          let copyMCs: MachineConfig[] = JSON.parse(JSON.stringify(this.machineConfigs));
+          let index = copyMCs.findIndex(mc => mc.id === currMC.id);
+          copyMCs.splice(index, 1);
+          mainService.saveDataToLS('machineConfigs', copyMCs);
+          mainService.loadDataInFromLS('machineConfigs');
+          this.currConfigIndex = 0;
+        }
+      })
     },
     setAsDeafult() {
       let currMC: MachineConfig = this.currMachineConfig;
@@ -222,7 +228,7 @@ export default Vue.extend({
         mainService.saveDataToLS('machineConfigs', copyMCs);
         mainService.loadDataInFromLS('machineConfigs');
         this.currConfigIndex = 0;
-        mainService.alert('成功');
+        mainService.inform('設定成功');
       })
     },
   },

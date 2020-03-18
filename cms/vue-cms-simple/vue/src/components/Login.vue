@@ -78,11 +78,11 @@ export default Vue.extend({
       let users: User[] = this.users as any;
       let theUser = users.find(user => user.accountName === this.loginData.accountName);
       if (!theUser) {
-        alert('無此帳號');
+        mainService.alert('無此帳號');
         return
       }
       if (theUser.password !== this.loginData.password) {
-        alert('密碼錯誤');
+        mainService.alert('密碼錯誤');
         return
       }
       theUser.lastLognT = new Date();
