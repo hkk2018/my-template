@@ -12,7 +12,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var socket_io_1 = __importDefault(require("socket.io"));
 var http = __importStar(require("http"));
-var server = http.createServer(function (request, response) { });
+var server = http.createServer(function (request, response) {
+
+    response.writeHead(200, { "content-type": 'text/html' });
+    response.end('1212121');
+ });
 var port = 8082;
 // about 0.0.0.0:
 // https://stackoverflow.com/questions/8325480/set-up-node-so-it-is-externally-visible
