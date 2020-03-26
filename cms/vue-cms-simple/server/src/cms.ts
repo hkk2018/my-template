@@ -25,28 +25,37 @@ interface ButtonToActivate {
 
 export let cmsLib = {
     cmsSocket: null as null | io.Socket,
-
     sendDataLog(msg: string) {
-        if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('DATA_LOG', msg);
+        //optional chain
+        cmsLib.cmsSocket?.emit('DATA_LOG', msg);
     },
     sendErrLog(msg: string) {
-        if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('ERR_LOG', msg);
+        cmsLib.cmsSocket?.emit('ERR_LOG', msg);
+    },
+    sendUnfixableErrLog(msg: string) {
+        cmsLib.cmsSocket?.emit('UNFIXABLE_ERR_LOG', msg);
     },
     tellVmzConnectingState(isConnecting: boolean) {
-        if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('VMZ_CONNECTION_STATE', isConnecting);
+        cmsLib.cmsSocket?.emit('VMZ_CONNECTION_STATE', isConnecting);
     },
-    tellIsProcessStarted(isStarted:boolean){
-        if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('IS_PROCESS_STARTED', isStarted);
-    }
-
-
+    tellIsProcessStarted(isStarted: boolean) {
+        cmsLib.cmsSocket?.emit('IS_PROCESS_STARTED', isStarted);
+    },
+    askKeyInNumberP(): Promise<string> {
+        return new Promise((res, rej) => {
+            cmsLib.cmsSocket?.emit('AS_KEY_IN_NUMBER', null, onReplied);
+            function onReplied(numberStr: string) {
+                res(numberStr);
+            }
+        })
+    },
 }
 
 // socket.io需要聽http.server
 let serv_io = io.listen(server);
 serv_io.sockets.on('connection', function (socket) {
     console.log('cms is connected.')
-    cmsLib.cmsSocket=socket;
+    cmsLib.cmsSocket = socket;
     // socket.on('SET_AS_DEFAULT_MACHINESEETING', function (data: FromFront.MachineSetting, reply: Function) {
     //     console.log(data);
     //     let replyData: ResponseObj = { status: 200, payload: null };

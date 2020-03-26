@@ -4,34 +4,36 @@ import { ExecResult } from "./data-tpye";
 
 
 export let mainService = {
+    //要繼續流程的錯誤全都在resolve的callback處理，要終止流程的錯誤直接進catch
     execStepP(): Promise<any> {
         cmsLib.tellIsProcessStarted(mainState.execIndex > 2);
         return mainState.taskPFuncArr[mainState.execIndex]().then(
-            (result: ExecResult) => {
-                if (result.isSuccess) {
-                    if (!mainState.isPause) {
-                        if (mainState.taskPFuncArr[mainState.execIndex + 1]) {
-                            mainState.execIndex++;
-                            return mainService.execStepP();
-                        }
-                        else onComplet();
+            successMsg => {
+                if (!mainState.isPause) {
+                    if (mainState.taskPFuncArr[mainState.execIndex + 1]) {
+                        mainState.execIndex++;
+                        return mainService.execStepP();
                     }
-                    else return;
+                    else onComplete();
                 }
-                else onErr(result.msg || '');
+                else return;
             },
-            (specialErrMsg: string) => {
-                onErr(specialErrMsg);//未與vmz或手臂連線、斷線
-            })
+            (errMsg: string) => {
+                onErr(errMsg);//致使前端暫停
+            }
+        )
     }
 }
 
-
+// onUnfixableErr(specialErrMsg);//未與vmz或手臂連線、斷線，或其他不知名錯誤（程序無法handle者）
 function onErr(errMsg: string) {
     cmsLib.sendErrLog(errMsg);//會觸發前端暫停
 }
+function onUnfixableErr(errMsg: string) {
+    cmsLib.sendUnfixableErrLog(errMsg);
+}
 
-function onComplet() {
+function onComplete() {
     mainState.execIndex = 0;
     cmsLib.tellIsProcessStarted(false);
 }

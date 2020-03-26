@@ -10,6 +10,8 @@ console.log('connected to ' + port);
 // console.log(dbOnLinux);
 export let socket = io(url);
 
+
+
 socket.emit('VMZ_CONNECTION_STATE', null, (isConnecting: boolean) => {
     console.log('vmz connection: ' + isConnecting);
     mainData.isVmzConnecting = isConnecting;
@@ -24,6 +26,11 @@ socket.on('DATA_LOG', function (log: string, reply: Function) {
 socket.on('ERR_LOG', function (log: string, reply: Function) {
     mainService.handleLogs(log, true);
     mainData.isSystemRunning = false;
+})
+socket.on('UNFIXABLE_ERR_LOG', function (log: string, reply: Function) {
+    mainService.handleLogs(log, true);
+    mainData.isSystemRunning = false;
+    mainData.isSystemProcessStarted = false;//重置
 })
 
 socket.on('IS_PROCESS_STARTED', function (isSystemProcessStarted: boolean, reply: Function) {
