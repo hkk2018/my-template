@@ -27,24 +27,29 @@ socket.on('ERR_LOG', function (log: string, reply: Function) {
     mainService.handleLogs(log, true);
     mainData.isSystemRunning = false;
 })
-socket.on('UNFIXABLE_ERR_LOG', function (log: string, reply: Function) {
-    mainService.handleLogs(log, true);
-    mainData.isSystemRunning = false;
-    mainData.isSystemProcessStarted = false;//重置
-})
 
-socket.on('IS_PROCESS_STARTED', function (isSystemProcessStarted: boolean, reply: Function) {
-    mainData.isSystemProcessStarted = isSystemProcessStarted;
+
+// socket.on('UNFIXABLE_ERR_LOG', function (log: string, reply: Function) {
+//     mainService.handleLogs(log, true);
+//     mainData.isSystemRunning = false;
+//     mainData.isSystemProcessStarted = false;//重置
+// })
+
+// socket.on('IS_PROCESS_STARTED', function (isSystemProcessStarted: boolean, reply: Function) {
+//     mainData.isSystemProcessStarted = isSystemProcessStarted;
+// });
+
+socket.on('ASK_KEY_IN_NUMBER', function (data: null, reply: Function) {
+    let numberStr = prompt('請輸入號碼:');
+    reply(numberStr);
 });
 
-
-
 export let socketLib = {
-    emitEvent(eventName: EventName, data?: any) {
+    socket:socket,
+    emitEvent(eventName: EventName, data?: any, onReplied?: Function) {
         if (socket.disconnected) mainService.alert('系統未連線，請重新啟動')
-        else socket.emit(eventName, data);
+        else socket.emit(eventName, data, onReplied);
     }
-
 }
 
 type EventName = 'INIT' | 'AUTO' | 'STOP'

@@ -27,24 +27,28 @@
         <div
           class="controlBut init"
           :class="{disabled:isDisabled||isSystemRunning}"
-          :disabled="isDisabled&&isSystemRunning"
+          :disabled="isDisabled||isSystemRunning"
           @click="clickInit"
         >INITIAL</div>
       </div>
       <div class="connectionTip" :class="{connecting:isVmzConnecting}">VMZ Connection</div>
     </div>
     <div class="fullH splitV" style="flex-grow:1">
-      <div class="switcher">
-        <div
-          class="switherElement noRightRadius"
-          @click="isDataLog=!isDataLog"
-          :class="{selected:isDataLog}"
-        >Log</div>
-        <div
-          class="switherElement noLeftRadius"
-          @click="isErrLog=!isErrLog"
-          :class="{selected:isErrLog}"
-        >Err</div>
+      <div class="switcherRow">
+        <div>
+          <div
+            class="switherElement noRightRadius"
+            @click="isDataLog=!isDataLog"
+            :class="{selected:isDataLog}"
+          >Log</div>
+          <div
+            class="switherElement noLeftRadius"
+            @click="isErrLog=!isErrLog"
+            :class="{selected:isErrLog}"
+          >Err</div>
+        </div>
+
+        <input type="button" value="Save" style="margin-right:2rem" @click="downLoadLogs" />
       </div>
       <div class="logBoxWrapper center">
         <div class="logBox">
@@ -67,7 +71,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import { socketLib } from '../../socket';
-import { mainData } from '../../main-data';
+import { mainData, LogObj } from '../../main-data';
 import { mainService } from '../../main-service';
 
 export default Vue.extend({
@@ -83,41 +87,65 @@ export default Vue.extend({
     }
   },
   methods: {
+    //啟動鈕可以按的時候，基本上機器都處於暫停狀態(未開始or發生錯誤or人為停止)，只是觸發繼續的程序，所以這個isSystemRunning基本上就是實況
     clickAuto() {
       if (this.isDisabled) return;
+      if (socketLib.socket.disconnected) {
+        //雖然發送時有檢查，但由於有些未跟系統確認就寫定的邏輯，遇到未連線的系統行為會異常，所以還是先於任何按鈕邏輯作檢查
+        mainService.alert('尚未連線至系統');
+        return;
+      }
+      socketLib.emitEvent('AUTO');
       mainData.isSystemRunning = true;
-
       this.isDisabled = true;
       setTimeout(() => {
         this.isDisabled = false;
       }, 2000);
-      
-      if (this.isSystemProcessStarted) {
-        let isPrevStep = mainService.confirm('是否從上一步重新開始?', undefined, false);
-        socketLib.emitEvent('AUTO', isPrevStep);
-      }
-      else {
-        socketLib.emitEvent('AUTO');
-      }
+
+      // 沒有要從上一步開始就不用使用到 isSystemProcessStarted
+      // if (this.isSystemProcessStarted) {
+      //   let isPrevStep = mainService.confirm('是否從上一步重新開始?', undefined, false);
+      //   socketLib.emitEvent('AUTO', isPrevStep);
+      // }
+      // else {
+      //   socketLib.emitEvent('AUTO');
+      // }
     },
     clickInit() {
       if (this.isDisabled) return
+      if (socketLib.socket.disconnected) {
+        //雖然發送時有檢查，但由於有些未跟系統確認就寫定的邏輯，遇到未連線的系統行為會異常，所以還是先於任何按鈕邏輯作檢查
+        mainService.alert('尚未連線至系統');
+        return;
+      }
       this.isDisabled = true;
-      setTimeout(() => {
+      socketLib.emitEvent('INIT', null, (res: RespObj) => {
+        mainService.handleLogs((res.isErr ? 'ERR: ' : '') + res.msg, res.isErr);
         this.isDisabled = false;
-      }, 2000);
-      socketLib.emitEvent('INIT');
-
+      });
     },
+    //要等機械確實停止才可以變換狀態，否則馬上按auto就會發生同時執行兩個命令的情況
     clickStop() {
       if (this.isDisabled) return
+      if (socketLib.socket.disconnected) {
+        //雖然發送時有檢查，但由於有些未跟系統確認就寫定的邏輯，遇到未連線的系統行為會異常，所以還是先於任何按鈕邏輯作檢查
+        mainService.alert('尚未連線至系統');
+        return;
+      }
       this.isDisabled = true;
-      setTimeout(() => {
+      socketLib.emitEvent('STOP', null, () => {
         this.isDisabled = false;
-      }, 2000);
-      socketLib.emitEvent('STOP');
-
+        mainData.isSystemRunning = false;
+      });
     },
+    downLoadLogs() {
+      let logs: LogObj[] = this.logs as any;
+      let str = '';
+      for (let i = 0; i < logs.length; i++) {
+        str += logs[i].receivedT + ' ' + logs[i].logMsg + '\n\r';
+      }
+      mainService.download(str);
+    }
 
   },
   watch: {
@@ -145,6 +173,7 @@ export default Vue.extend({
   border: 1px transparent; //prevent margin collapse
   padding: 2rem;
   overflow: hidden;
+  padding-top: 1rem;
 }
 .logBox {
   box-sizing: border-box;
@@ -159,9 +188,12 @@ export default Vue.extend({
 }
 .textLine {
   margin-bottom: 1rem;
+  word-break: break-all; // https://stackoverflow.com/questions/22369140/html-css-force-wrap-number-displayed-in-chrome
 }
-.switcher {
+.switcherRow {
   margin: 1rem 0 0 2rem;
+  display: flex;
+  justify-content: space-between;
 }
 .switherElement {
   display: inline-block;

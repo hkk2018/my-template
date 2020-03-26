@@ -1,15 +1,13 @@
-import * as net from 'net'
-import { roboArmLib } from './arm-process'
-import { ExecResult } from './data-tpye';
-import { vmzLib } from './vmz';
+import { roboArmLib } from './arm-process';
 import { cmsLib } from './cms';
+import { vmzLib } from './vmz';
 
 export let mainState = {
     isPause: false,
-    isInit: false,
+    isStarted: false,
     execIndex: 0,
+    pauseInformCmsRes:()=>{},
     stationWaferInfo: '',//'A4B6C0'
-    stationIndex: 0,
     taskPFuncArrBase: [
         () => roboArmLib.reqArmP(roboArmLib.strStarter),
         () => roboArmLib.reqArmP(roboArmLib.strStarter2),
@@ -28,6 +26,11 @@ export let mainState = {
         () => handleWaferSizeProcP(0),
         () => handleWaferSizeProcP(1),
         () => handleWaferSizeProcP(2),
+        () => Promise.resolve().then(() => {
+            cmsLib.sendDataLog('排程已全數執行完畢，可重新開始');
+            mainState.isStarted=false;
+            return 'Process Done';
+        })
     ] as (() => Promise<string>)[],
     taskPFuncArr: [] as (() => Promise<string>)[],//因為small loop的步驟會動態增，所以每次要用時就用基底取代過來
 }

@@ -1,6 +1,6 @@
-import { mainState } from "./main-state";
+import { roboArmLib } from "./arm-process";
 
 //回傳promise的函數陣列
+roboArmLib.connectToArm();
 
-mainState.taskPFuncArr = mainState.taskPFuncArrBase;
 

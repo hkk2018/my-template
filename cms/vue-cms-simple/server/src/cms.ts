@@ -1,7 +1,8 @@
+import * as http from 'http';
 import io from 'socket.io';
-import * as http from 'http'
 import { mainState } from './main-state';
 import { vmzLib } from './vmz';
+import { mainService } from './main-service';
 import { roboArmLib } from './arm-process';
 
 
@@ -17,11 +18,6 @@ server.listen(port, '0.0.0.0', function () {
     console.log('--------');
 });
 
-interface ButtonToActivate {
-    INIT: boolean;
-    AUTO: boolean;
-    STOP: boolean;
-}
 
 export let cmsLib = {
     cmsSocket: null as null | io.Socket,
@@ -30,7 +26,7 @@ export let cmsLib = {
         cmsLib.cmsSocket?.emit('DATA_LOG', msg);
     },
     sendErrLog(msg: string) {
-        cmsLib.cmsSocket?.emit('ERR_LOG', msg);
+        cmsLib.cmsSocket?.emit('ERR_LOG', 'ERR: ' + msg);
     },
     sendUnfixableErrLog(msg: string) {
         cmsLib.cmsSocket?.emit('UNFIXABLE_ERR_LOG', msg);
@@ -39,11 +35,11 @@ export let cmsLib = {
         cmsLib.cmsSocket?.emit('VMZ_CONNECTION_STATE', isConnecting);
     },
     tellIsProcessStarted(isStarted: boolean) {
-        cmsLib.cmsSocket?.emit('IS_PROCESS_STARTED', isStarted);
+        // cmsLib.cmsSocket?.emit('IS_PROCESS_STARTED', isStarted);
     },
     askKeyInNumberP(): Promise<string> {
         return new Promise((res, rej) => {
-            cmsLib.cmsSocket?.emit('AS_KEY_IN_NUMBER', null, onReplied);
+            cmsLib.cmsSocket?.emit('ASK_KEY_IN_NUMBER', null, onReplied);
             function onReplied(numberStr: string) {
                 res(numberStr);
             }
@@ -64,16 +60,39 @@ serv_io.sockets.on('connection', function (socket) {
 
 
     socket.on('INIT', function (data: null, reply: Function) {
-        console.log('INIT');
+        mainState.isStarted = false;
+        //不參與mainState的execIndex，自己在這邊作
+        roboArmLib.reqArmP(roboArmLib.strStarter).then(() => {
+            return roboArmLib.reqArmP(roboArmLib.strStarter2)
+        }).then(() => {
+            roboArmLib.reqArmP('STAT').then(msg => {
+                if (mainService.hex2bin(msg)[5] === '0') {
+                    reply({ isErr: false, msg: msg } as RespObj);
+                }
+                else reply({ isErr: true, msg: msg } as RespObj);
+            })
+        }).catch(err => {
+            console.log(err);//怕字串化錯誤會crash，就傳個自訂字串
+            reply({ isErr: true, msg: typeof err === 'string' ? err : '異常錯誤' } as RespObj);
+        });
 
+        console.log('INIT');
     })
     socket.on('AUTO', function (data: any, reply: Function) {
         console.log('AUTO');
+        if (mainState.isStarted) mainService.countinueProcess();
+        else mainService.startProcess();
     })
 
     socket.on('STOP', function (data: null, reply: Function) {
         console.log('STOP')
-        mainState.isPause = true;
+        new Promise((res, rej) => {
+            mainState.pauseInformCmsRes = res;
+            mainState.isPause = true;
+        }).then(() => {
+            reply();
+        })
+
     })
     socket.on('VMZ_CONNECTION_STATE', function (data: null, reply: Function) {
         console.log('VMZ Connection state checked by CMS');

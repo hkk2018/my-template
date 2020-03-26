@@ -9,6 +9,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var net = __importStar(require("net"));
 var cms_1 = require("./cms");
+var main_state_1 = require("./main-state");
 exports.vmzLib = {
     vmzSocket: null,
     resolveFunc: null,
@@ -25,11 +26,10 @@ exports.vmzLib = {
             else
                 rej('未連線至vmz');
         }).then(function (stringFromVmz) {
-            var ExecResult = {
-                isSuccess: stringFromVmz !== 'ng',
-                msg: stringFromVmz //可能是'finish'或者是waferId等
-            };
-            return ExecResult;
+            if (stringFromVmz === 'ng')
+                return Promise.reject(stringFromVmz);
+            else
+                return stringFromVmz;
         });
     }
 };
@@ -48,8 +48,16 @@ server.on('connection', function (socket) {
     socket.write('Hello, client.');
     //receive
     socket.on('data', function (data) {
-        exports.vmzLib.resolveFunc(data.toString()); //送資料給reqVmz的promise回傳值
-        console.log("Data received from client: " + data.toString() + ".");
+        var dataStr = data.toString();
+        if ('dooropen' === dataStr) {
+            main_state_1.mainState.isPause; //不會繼續作下去
+            //告知前端已經暫停，但實際上此步因為沒有在taskQueue中拋出錯誤，所以正在執行的動作還是會完成，
+            //而進入下一個index，當前端按繼續，就是繼續此index的事情，流程上正確。
+            cms_1.cmsLib.sendErrLog(dataStr);
+        }
+        else
+            exports.vmzLib.resolveFunc(dataStr); //送資料給reqVmz的promise回傳值
+        console.log("Data received from vmz client: " + dataStr + ".");
     });
     //end
     socket.on('end', function () {
@@ -58,6 +66,8 @@ server.on('connection', function (socket) {
     });
     //error
     socket.on('error', function (err) {
+        cms_1.cmsLib.sendErrLog(typeof err === 'string' ? err : 'vmz異常');
+        main_state_1.mainState.isPause = true;
         console.log("Error: " + err);
     });
 });

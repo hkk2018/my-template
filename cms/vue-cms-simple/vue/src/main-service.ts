@@ -26,7 +26,7 @@ export let mainService = {
             modalConfig.resFunc = res;
         })
     },
-    confirm(body: string, title: string = '系統訊息',isConfirmCancel:boolean=true): Promise<boolean> {
+    confirm(body: string, title: string = '系統訊息', isConfirmCancel: boolean = true): Promise<boolean> {
         let modalConfig: ModalConfig = (mainService.vm as any).$children[0].modalConfig;
         modalConfig.isShowModal = true;
         modalConfig.isConfirm = true;
@@ -109,6 +109,18 @@ export let mainService = {
             mainData.logs.splice(mainData.logs.length - 1, 1)
         }
         mainService.saveDataToLS('logs', mainData.logs)
+    },
+    download(text: string, filename = 'logs') {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
     }
 }
 
