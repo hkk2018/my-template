@@ -5,7 +5,8 @@ export let mainData: MainData = {
     machineConfigs: [],
     logs: [],
     isSystemRunning: false,
-    isVmzConnecting:false,
+    isVmzConnecting: false,
+    isSystemProcessStarted: false,
 }
 
 export class User {
@@ -25,8 +26,9 @@ interface MainData {
     users: User[];
     machineConfigs: MachineConfig[];
     logs: LogObj[];
-    isSystemRunning:boolean
-    isVmzConnecting:boolean
+    isSystemRunning: boolean
+    isVmzConnecting: boolean
+    isSystemProcessStarted: boolean//是否作過第一步
 
 }
 

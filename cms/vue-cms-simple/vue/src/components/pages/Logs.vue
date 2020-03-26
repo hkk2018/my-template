@@ -67,6 +67,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import { socketLib } from '../../socket';
+import { mainData } from '../../main-data';
 
 export default Vue.extend({
   name: 'Logs',
@@ -82,28 +83,30 @@ export default Vue.extend({
   },
   methods: {
     clickAuto() {
-      this.isDisabled = true;
+      if (this.isDisabled) return
+      mainData.isSystemRunning = true;
       socketLib.emitEvent('AUTO');
-      setTimeout(() => {
-        this.isDisabled = false;
-      }, 2000);
+
     },
     clickInit() {
-      this.isDisabled = true;
+      if (this.isDisabled) return
       socketLib.emitEvent('INIT');
-      setTimeout(() => {
-        this.isDisabled = false;
-      }, 2000);
+
     },
     clickStop() {
-      this.isDisabled = true;
+      if (this.isDisabled) return
+      this.isDisabled = true;//等確實暫停才可按
       socketLib.emitEvent('STOP');
-      setTimeout(() => {
-        this.isDisabled = false;
-      }, 2000);
-    },
-  },
 
+    },
+  
+  },
+  watch: {
+      //遠端回報暫停狀態時才解除按鈕鎖定
+      isSystemRunning(nv: boolean) {
+        if (nv === false) this.isDisabled = false;
+      }
+    },
 });
 </script>
 
@@ -175,6 +178,7 @@ export default Vue.extend({
   border-style: solid;
   border-width: 1px;
   cursor: pointer;
+  user-select: none;
 }
 .controlBut:hover {
   filter: brightness(110%);

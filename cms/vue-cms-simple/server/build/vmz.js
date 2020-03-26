@@ -18,7 +18,7 @@ exports.vmzLib = {
         return new Promise(function (res, rej) {
             //建立socket過且處於連線中才可調用此函數
             if (exports.vmzLib.vmzSocket != null && exports.vmzLib.vmzSocket.connecting) {
-                cms_1.cmsLib.SendDataLog(command);
+                cms_1.cmsLib.sendDataLog(command);
                 exports.vmzLib.vmzSocket.write(command);
                 exports.vmzLib.resolveFunc = res;
             }
@@ -43,6 +43,7 @@ server.listen(8124, function () {
 server.on('connection', function (socket) {
     console.log('A new connection has been established.');
     exports.vmzLib.vmzSocket = socket;
+    cms_1.cmsLib.tellVmzConnectingState(true);
     //write
     socket.write('Hello, client.');
     //receive
@@ -53,6 +54,7 @@ server.on('connection', function (socket) {
     //end
     socket.on('end', function () {
         console.log('Closing connection with the client');
+        cms_1.cmsLib.tellVmzConnectingState(false);
     });
     //error
     socket.on('error', function (err) {

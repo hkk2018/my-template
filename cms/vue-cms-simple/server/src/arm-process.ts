@@ -1,6 +1,6 @@
-import * as net from 'net'
-import { mainState } from './main-state';
+import * as net from 'net';
 import { cmsLib } from './cms';
+import { ExecResult } from './data-tpye';
 //設定
 const port = 8001;    // Datalogger port
 const host = '192.168.29.130';    // Datalogger IP address
@@ -14,6 +14,8 @@ let delayIndex = 0;
 let sendDelay = 6000;
 
 export let roboArmLib = {
+	strStarter:'SVON', //on
+	strStarter2:'HOM', //home
 	roboArmSocket: null as net.Socket | null,
 	resolveFunc: null as any,
 	//直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於VmzReply之msg中，以便後續處裡
@@ -21,7 +23,8 @@ export let roboArmLib = {
 		return new Promise((res: (str: string) => void, rej) => {
 			//建立socket過且處於連線中才可調用此函數
 			if (roboArmLib.roboArmSocket != null && roboArmLib.roboArmSocket.connecting) {
-				cmsLib.SendDataLog(command);
+				cmsLib.sendDataLog(command);
+				command+='\r\n';
 				roboArmLib.roboArmSocket.write(command, 'ascii');
 				roboArmLib.resolveFunc = res;
 			}
@@ -35,15 +38,11 @@ export let roboArmLib = {
 		})
 	}
 }
-interface ExecResult {
-	isSuccess: boolean;
-	msg: string | null
-}
 
 
 
 //指令
-console.log('programme starts')
+console.log('program starts')
 let socket = net.createConnection(port, host, () => {
 	console.log('connected');
 	roboArmLib.roboArmSocket = socket;
@@ -54,13 +53,13 @@ let socket = net.createConnection(port, host, () => {
 		//action done: >
 		//action fail: ?
 		//sendToArm('STAT');
-		roboArmLib.resolveFunc(data.toString());//送資料回Promise
-		console.log(data.toString());
+		roboArmLib.resolveFunc(data.toString().replace('\r\n',''));//送資料回Promise
+		console.log(data.toString().replace('\r\n',''));
 
 		// socket.end();
 	});
 	//---
-
+/*
 	//start roboarm service
 	//initialize
 	socket.write(strStarter, 'ascii', (res) => { console.log(res) });
@@ -134,7 +133,7 @@ let socket = net.createConnection(port, host, () => {
 
 		console.log('end')
 	}, 10000)
-
+*/
 	//async commands
 	//手冊: 65頁
 	//三軸: (T,R,Z)

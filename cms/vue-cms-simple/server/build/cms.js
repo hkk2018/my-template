@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var socket_io_1 = __importDefault(require("socket.io"));
 var http = __importStar(require("http"));
 var main_state_1 = require("./main-state");
+var vmz_1 = require("./vmz");
 var server = http.createServer(function (request, response) { });
 var port = 8082;
 // about 0.0.0.0:
@@ -25,37 +26,24 @@ server.listen(port, '0.0.0.0', function () {
 });
 exports.cmsLib = {
     cmsSocket: null,
-    //同時控制後台按鈕跟聽傳來的指令
-    // waitCommandFromCmsP(bta:ButtonToActivate) {
-    //     return new Promise((res: (str: string) => void, rej) => {
-    //         //建立socket過且處於連線中才可調用此函數
-    //         if (vmzLib.vmzSocket != null && vmzLib.vmzSocket.connecting) {
-    //             vmzLib.vmzSocket.write(command);
-    //             vmzLib.resolveFunc = res;
-    //         }
-    //         else rej('未連線至vmz')
-    //     }).then((stringFromVmz: string) => {
-    //         let vmzReply: VmzReply = {
-    //             isSuccess: stringFromVmz !== 'ng', //不是ng就成功
-    //             msg: stringFromVmz //可能是'finish'或者是waferId等
-    //         };
-    //         return vmzReply
-    //     })
-    // }
-    SendDataLog: function (msg) {
+    sendDataLog: function (msg) {
         if (exports.cmsLib.cmsSocket)
             exports.cmsLib.cmsSocket.emit('DATA_LOG', msg);
     },
-    SendErrLog: function (msg) {
+    sendErrLog: function (msg) {
         if (exports.cmsLib.cmsSocket)
             exports.cmsLib.cmsSocket.emit('ERR_LOG', msg);
-    }
+    },
+    tellVmzConnectingState: function (isConnecting) {
+        if (exports.cmsLib.cmsSocket)
+            exports.cmsLib.cmsSocket.emit('VMZ_CONNECTION_STATE', isConnecting);
+    },
 };
 // socket.io需要聽http.server
 var serv_io = socket_io_1.default.listen(server);
 serv_io.sockets.on('connection', function (socket) {
     console.log('cms is connected.');
-    //註冊事件
+    exports.cmsLib.cmsSocket = socket;
     // socket.on('SET_AS_DEFAULT_MACHINESEETING', function (data: FromFront.MachineSetting, reply: Function) {
     //     console.log(data);
     //     let replyData: ResponseObj = { status: 200, payload: null };
@@ -71,31 +59,17 @@ serv_io.sockets.on('connection', function (socket) {
         console.log('STOP');
         main_state_1.mainState.isPause = true;
     });
-    //傳訊息給客戶端
-    setInterval(function () {
-        socketEmitP(socket, 'DATA_LOG', 'data test' + new Date().toLocaleTimeString()).then(function (data) {
-            console.log(data);
-        });
-    }, 3000);
-    setInterval(function () {
-        socketEmitP(socket, 'ERR_LOG', 'err test' + new Date().toLocaleTimeString());
-    }, 5000);
-});
-/**
-* 伺服器回應200就會直接Resolve(replied data)，否則將含狀態碼的ResponseObj整個回傳
-* @param eventName
-* @param passingData
-*/
-function socketEmitP(socket, eventName, passingData) {
-    return new Promise(function (resolve, reject) {
-        //dataWithE如果是undefined在serverEnd好像會變成null
-        socket.emit(eventName, passingData, onReplied);
-        // socket.emit(eventName, callBack); 如果沒填passingData，io就會以為callBack是passingData，而導致acknowklegment不被啟用
-        function onReplied(response) {
-            if (response.status === 200)
-                resolve(response.payload); //then會接到data
-            else
-                reject(response); //catch會接到人寫的error obj
-        }
+    socket.on('VMZ_CONNECTION_STATE', function (data, reply) {
+        console.log('VMZ Connection state checked by CMS');
+        reply(Boolean(vmz_1.vmzLib.vmzSocket && vmz_1.vmzLib.vmzSocket.connecting));
     });
-}
+    // //傳訊息給客戶端
+    // setInterval(() => {
+    //     socketEmitP(socket, 'DATA_LOG', 'data test' + new Date().toLocaleTimeString()).then((data) => {
+    //         console.log(data)
+    //     });
+    // }, 3000)
+    // setInterval(() => {
+    //     socketEmitP(socket, 'ERR_LOG', 'err test' + new Date().toLocaleTimeString());
+    // }, 5000)
+});

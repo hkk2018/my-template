@@ -1,6 +1,6 @@
-import * as net from 'net'
-import { mainState } from './main-state';
+import * as net from 'net';
 import { cmsLib } from './cms';
+import { ExecResult } from './data-tpye';
 
 export let vmzLib = {
     vmzSocket: null as net.Socket | null,
@@ -10,7 +10,7 @@ export let vmzLib = {
         return new Promise((res: (str: string) => void, rej) => {
             //建立socket過且處於連線中才可調用此函數
             if (vmzLib.vmzSocket != null && vmzLib.vmzSocket.connecting) {
-                cmsLib.SendDataLog(command);
+                cmsLib.sendDataLog(command);
                 vmzLib.vmzSocket.write(command);
                 vmzLib.resolveFunc = res;
             }
@@ -37,7 +37,7 @@ server.listen(8124, function () {
 server.on('connection', function (socket) {
     console.log('A new connection has been established.');
     vmzLib.vmzSocket = socket;
-
+    cmsLib.tellVmzConnectingState(true);
 
     //write
     socket.write('Hello, client.');
@@ -51,6 +51,7 @@ server.on('connection', function (socket) {
     //end
     socket.on('end', function () {
         console.log('Closing connection with the client');
+        cmsLib.tellVmzConnectingState(false);
     });
 
     //error

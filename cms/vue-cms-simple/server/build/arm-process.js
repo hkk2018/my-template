@@ -18,6 +18,8 @@ var strStarter2 = 'HOM\r\n'; //home
 var delayIndex = 0;
 var sendDelay = 6000;
 exports.roboArmLib = {
+    strStarter: 'SVON',
+    strStarter2: 'HOM',
     roboArmSocket: null,
     resolveFunc: null,
     //直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於VmzReply之msg中，以便後續處裡
@@ -25,7 +27,8 @@ exports.roboArmLib = {
         return new Promise(function (res, rej) {
             //建立socket過且處於連線中才可調用此函數
             if (exports.roboArmLib.roboArmSocket != null && exports.roboArmLib.roboArmSocket.connecting) {
-                cms_1.cmsLib.SendDataLog(command);
+                cms_1.cmsLib.sendDataLog(command);
+                command += '\r\n';
                 exports.roboArmLib.roboArmSocket.write(command, 'ascii');
                 exports.roboArmLib.resolveFunc = res;
             }
@@ -51,8 +54,8 @@ var socket = net.createConnection(port, host, function () {
         //action done: >
         //action fail: ?
         //sendToArm('STAT');
-        exports.roboArmLib.resolveFunc(data.toString()); //送資料回Promise
-        console.log(data.toString());
+        exports.roboArmLib.resolveFunc(data.toString().replace('\r\n', '')); //送資料回Promise
+        console.log(data.toString().replace('\r\n', ''));
         // socket.end();
     });
     //---

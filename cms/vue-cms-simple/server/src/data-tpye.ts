@@ -9,7 +9,8 @@ interface ResponseObj {
     payload: any //非200則為錯誤訊息
 }
 
-interface ExecResult {
-    isSuccess: boolean;
-    msg: string | null
+export class ExecResult {
+    constructor(public isSuccess: boolean, public msg: string | null = null) {
+    }
+
 }
