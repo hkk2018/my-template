@@ -1,4 +1,4 @@
-import { mainData, MachineConfig, PartConfig, AxisInfo } from './main-data';
+import { mainData, MachineConfig, PartConfig, AxisInfo, LogObj } from './main-data';
 import { socket } from './socket';
 
 interface ModalConfig {
@@ -99,13 +99,16 @@ export let mainService = {
             }
         })
     },
-    handleLogs(log: string, isErr: boolean = false) {
-        let theLogs: string[] = isErr ? mainData.errLogs : mainData.dataLogs;
-        let sizeLimit = 1000;
-        theLogs.splice(0, 0, log);
-        if (theLogs.length > sizeLimit) {
-            theLogs.splice(theLogs.length - 1, 1)
+    handleLogs(logMsg: string, isErr: boolean = false) {
+
+        let sizeLimit = 3000;
+        mainData.logs.splice(0, 0, new LogObj(logMsg, isErr));
+        if (mainData.logs.length > sizeLimit) {
+            mainData.logs.splice(mainData.logs.length - 1, 1)
         }
-        mainService.saveDataToLS(isErr ? 'errLogs' : 'dataLogs', theLogs)
+        mainService.saveDataToLS('logs', mainData.logs)
     }
 }
+
+
+

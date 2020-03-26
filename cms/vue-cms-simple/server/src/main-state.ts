@@ -1,5 +1,7 @@
 import * as net from 'net'
 
 export let mainState = {
-    vmzSocket: null as net.Socket | null,
+    delayT: 300,
+    isPause: false,
+    isInit:false
 }

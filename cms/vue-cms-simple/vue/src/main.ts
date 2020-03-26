@@ -13,8 +13,8 @@ let dataPreloadP = new Promise(res => {
   mainData.users = mainService.GetFromLocalStorage('users') || createRootUser();
   if (mainService.GetFromLocalStorage('machineConfigs') === null) createDefaultMachineConfig();
   mainService.loadDataInFromLS('machineConfigs');
-  mainService.loadDataInFromLS('dataLogs');
-  mainService.loadDataInFromLS('errLogs');
+  mainService.loadDataInFromLS('logs');
+
   res();
 });
 

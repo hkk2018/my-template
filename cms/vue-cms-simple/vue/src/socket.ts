@@ -10,10 +10,24 @@ console.log('connected to ' + port);
 export let socket = io(url);
 
 socket.on('DATA_LOG', function (log: string, reply: Function) {
-    mainService.handleLogs(log)
-    let dataToReply: ResponseObj = { status: 200, payload: '客戶端也可以回覆喔' };
-    reply(dataToReply);
+    mainService.handleLogs(log, false)
+    // let dataToReply: ResponseObj = { status: 200, payload: '客戶端也可以回覆喔' };
+    // reply(dataToReply);
+
 })
 socket.on('ERR_LOG', function (log: string, reply: Function) {
     mainService.handleLogs(log, true);
 })
+
+
+export let socketLib = {
+    emitEvent(eventName: EventName, data?: any) {
+        if (socket.disconnected) mainService.alert('系統未連線，請重新啟動')
+        else socket.emit(eventName, data);
+    }
+
+}
+
+type EventName = 'INIT' | 'AUTO' | 'STOP'
+
+

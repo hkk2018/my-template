@@ -4,7 +4,7 @@
       <LoginVue v-if="!md.user" v-bind="{users:md.users}" />
       <MainVue
         v-else
-        v-bind="{users:md.users,user:md.user,machineConfigs:md.machineConfigs,dataLogs:md.dataLogs,errLogs:md.errLogs}"
+        v-bind="{users:md.users,user:md.user,machineConfigs:md.machineConfigs,logs:md.logs,isSystemRunning:md.isSystemRunning,isVmzConnecting:md.isVmzConnecting}"
       />
     </transition>
     <ModalVue

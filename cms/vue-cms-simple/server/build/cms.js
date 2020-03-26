@@ -1,11 +1,20 @@
-import io from 'socket.io';
-import * as http from 'http'
-import { mainState } from './main-state';
-
-
-let server = http.createServer(function (request, response) { });
-let port = 8082;
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var socket_io_1 = __importDefault(require("socket.io"));
+var http = __importStar(require("http"));
+var main_state_1 = require("./main-state");
+var server = http.createServer(function (request, response) { });
+var port = 8082;
 // about 0.0.0.0:
 // https://stackoverflow.com/questions/8325480/set-up-node-so-it-is-externally-visible
 // https://stackoverflow.com/questions/14043926/node-js-connect-only-works-on-localhost
@@ -14,19 +23,11 @@ server.listen(port, '0.0.0.0', function () {
     console.log('server is listening to CMS on: ' + port);
     console.log('--------');
 });
-
-interface ButtonToActivate {
-    INIT: boolean;
-    AUTO: boolean;
-    STOP: boolean;
-}
-
-export let cmsLib = {
-    cmsSocket: null as null | io.Socket,
+exports.cmsLib = {
+    cmsSocket: null,
     //同時控制後台按鈕跟聽傳來的指令
     // waitCommandFromCmsP(bta:ButtonToActivate) {
     //     return new Promise((res: (str: string) => void, rej) => {
-
     //         //建立socket過且處於連線中才可調用此函數
     //         if (vmzLib.vmzSocket != null && vmzLib.vmzSocket.connecting) {
     //             vmzLib.vmzSocket.write(command);
@@ -40,81 +41,61 @@ export let cmsLib = {
     //         };
     //         return vmzReply
     //     })
-
     // }
-    SendDataLog(msg: string) {
-        if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('DATA_LOG', msg);
+    SendDataLog: function (msg) {
+        if (exports.cmsLib.cmsSocket)
+            exports.cmsLib.cmsSocket.emit('DATA_LOG', msg);
     },
-    SendErrLog(msg: string) {
-        if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('ERR_LOG', msg);
+    SendErrLog: function (msg) {
+        if (exports.cmsLib.cmsSocket)
+            exports.cmsLib.cmsSocket.emit('ERR_LOG', msg);
     }
-
-
-
-}
-
+};
 // socket.io需要聽http.server
-let serv_io = io.listen(server);
+var serv_io = socket_io_1.default.listen(server);
 serv_io.sockets.on('connection', function (socket) {
-    console.log('cms is connected.')
+    console.log('cms is connected.');
     //註冊事件
-
     // socket.on('SET_AS_DEFAULT_MACHINESEETING', function (data: FromFront.MachineSetting, reply: Function) {
     //     console.log(data);
     //     let replyData: ResponseObj = { status: 200, payload: null };
     //     reply(replyData);//回覆
     // })
-
-
-    socket.on('INIT', function (data: null, reply: Function) {
-        console.log('INIT')
-    })
-    socket.on('AUTO', function (data: any, reply: Function) {
-        console.log('AUTO')
-    })
-
-    socket.on('STOP', function (data: null, reply: Function) {
-        console.log('STOP')
-        mainState.isPause = true;
-    })
-
-
-
+    socket.on('INIT', function (data, reply) {
+        console.log('INIT');
+    });
+    socket.on('AUTO', function (data, reply) {
+        console.log('AUTO');
+    });
+    socket.on('STOP', function (data, reply) {
+        console.log('STOP');
+        main_state_1.mainState.isPause = true;
+    });
     //傳訊息給客戶端
-    setInterval(() => {
-        socketEmitP(socket, 'DATA_LOG', 'data test' + new Date().toLocaleTimeString()).then((data) => {
-            console.log(data)
+    setInterval(function () {
+        socketEmitP(socket, 'DATA_LOG', 'data test' + new Date().toLocaleTimeString()).then(function (data) {
+            console.log(data);
         });
-    }, 3000)
-
-    setInterval(() => {
+    }, 3000);
+    setInterval(function () {
         socketEmitP(socket, 'ERR_LOG', 'err test' + new Date().toLocaleTimeString());
-    }, 5000)
+    }, 5000);
 });
-
-
 /**
 * 伺服器回應200就會直接Resolve(replied data)，否則將含狀態碼的ResponseObj整個回傳
-* @param eventName 
-* @param passingData 
+* @param eventName
+* @param passingData
 */
-function socketEmitP(socket: io.Socket, eventName: ClientEvent, passingData?: any): Promise<any | ResponseObj> {
-    return new Promise((resolve, reject) => {
+function socketEmitP(socket, eventName, passingData) {
+    return new Promise(function (resolve, reject) {
         //dataWithE如果是undefined在serverEnd好像會變成null
         socket.emit(eventName, passingData, onReplied);
         // socket.emit(eventName, callBack); 如果沒填passingData，io就會以為callBack是passingData，而導致acknowklegment不被啟用
-        function onReplied(response: ResponseObj) {
-            if (response.status === 200) resolve(response.payload);//then會接到data
-            else reject(response);//catch會接到人寫的error obj
+        function onReplied(response) {
+            if (response.status === 200)
+                resolve(response.payload); //then會接到data
+            else
+                reject(response); //catch會接到人寫的error obj
         }
-    })
+    });
 }
-type ClientEvent = 'DATA_LOG' | 'ERR_LOG';
-
-interface ResponseObj {
-    status: number;
-    payload: any //非200則為錯誤訊息
-}
-
-
-

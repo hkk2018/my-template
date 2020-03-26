@@ -1,4 +1,6 @@
 import * as net from 'net'
+import { mainState } from './main-state';
+import { cmsLib } from './cms';
 //設定
 const port = 8001;    // Datalogger port
 const host = '192.168.29.130';    // Datalogger IP address
@@ -11,10 +13,40 @@ const strStarter2 = 'HOM\r\n'; //home
 let delayIndex = 0;
 let sendDelay = 6000;
 
+export let roboArmLib = {
+	roboArmSocket: null as net.Socket | null,
+	resolveFunc: null as any,
+	//直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於VmzReply之msg中，以便後續處裡
+	reqArmP(command: string): Promise<ExecResult> {
+		return new Promise((res: (str: string) => void, rej) => {
+			//建立socket過且處於連線中才可調用此函數
+			if (roboArmLib.roboArmSocket != null && roboArmLib.roboArmSocket.connecting) {
+				cmsLib.SendDataLog(command);
+				roboArmLib.roboArmSocket.write(command, 'ascii');
+				roboArmLib.resolveFunc = res;
+			}
+			else rej('未連線至機械手臂')
+		}).then((stringFromArm: string) => {
+			let ExecResult: ExecResult = {
+				isSuccess: stringFromArm !== '?', //不是?就成功
+				msg: stringFromArm
+			};
+			return ExecResult
+		})
+	}
+}
+interface ExecResult {
+	isSuccess: boolean;
+	msg: string | null
+}
+
+
+
 //指令
 console.log('programme starts')
-var socket = net.createConnection(port, host, () => {
+let socket = net.createConnection(port, host, () => {
 	console.log('connected');
+	roboArmLib.roboArmSocket = socket;
 
 	//---listening
 	socket.on('data', function (data) {
@@ -22,7 +54,9 @@ var socket = net.createConnection(port, host, () => {
 		//action done: >
 		//action fail: ?
 		//sendToArm('STAT');
+		roboArmLib.resolveFunc(data.toString());//送資料回Promise
 		console.log(data.toString());
+
 		// socket.end();
 	});
 	//---
@@ -119,10 +153,10 @@ var socket = net.createConnection(port, host, () => {
 
 });
 
-function hex2bin(hex) {
+function hex2bin(hex: string) {
 	return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
 }
-function sendToArm(message) {
+function sendToArm(message: string) {
 	message += '\r\n';
 	setTimeout(() => { socket.write(message, 'ascii', (res) => { }); }, sendDelay * delayIndex)
 	delayIndex += 1;

@@ -3,8 +3,9 @@ export let mainData: MainData = {
     user: null,
     users: [],
     machineConfigs: [],
-    dataLogs: [],
-    errLogs: [],
+    logs: [],
+    isSystemRunning: false,
+    isVmzConnecting:false,
 }
 
 export class User {
@@ -23,8 +24,10 @@ interface MainData {
     user: User | null;
     users: User[];
     machineConfigs: MachineConfig[];
-    dataLogs: string[];
-    errLogs: string[];
+    logs: LogObj[];
+    isSystemRunning:boolean
+    isVmzConnecting:boolean
+
 }
 
 export class MachineConfig {
@@ -37,4 +40,27 @@ export class PartConfig {
 }
 export class AxisInfo {
     constructor(public x: number | null = null, public y: number | null = null, public z: number | null = null) { }
+}
+
+
+
+export class LogObj {
+    constructor(public logMsg: string, public isErr: boolean) {
+    }
+    receivedT: string = getDateString(new Date());
+}
+
+function getDateString(d: Date) {
+    var year = d.getFullYear();
+    var month = pad(d.getMonth() + 1);
+    var day = pad(d.getDate());
+    var hour = pad(d.getHours());
+    var min = pad(d.getMinutes());
+    var sec = pad(d.getSeconds());
+    // return year + month + day + hour + min + sec;
+    return year + "/" + month + "/" + day + " " + hour + ":" + min + ":" + sec;
+    //YYYYMMDDhhmmss
+    function pad(v: number) {
+        return (v < 10) ? '0' + v : v
+    }
 }

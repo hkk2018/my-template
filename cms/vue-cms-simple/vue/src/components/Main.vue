@@ -26,8 +26,8 @@
             v-bind="{machineConfigs:machineConfigs}"
           />
           <LogsVue
-            v-else-if="featureEnum['系統訊息']===currFeature"
-            v-bind="{dataLogs:dataLogs,errLogs:errLogs}"
+            v-else-if="featureEnum['主頁面']===currFeature"
+            v-bind="{logs:logs,isSystemRunning:isSystemRunning,isVmzConnecting:isVmzConnecting}"
           />
           <AccountsVue v-else-if="featureEnum['帳戶管理']===currFeature" v-bind="{users:users}" />
           <VmzSettingVue v-else-if="featureEnum['VMZ設定']===currFeature" v-bind="{users:users}" />
@@ -48,11 +48,11 @@ import AccountsVue from './pages/Accounts.vue';
 import VmzSettingVue from './pages/VmzSetting.vue';
 
 enum Feature {
-  儀表板,
-  系統配置,
-  系統訊息,
+  // 儀表板,
+  // 系統配置,
+  主頁面,
   帳戶管理,
-  VMZ設定
+  // VMZ設定
 }
 
 function getFeatureNameArr() {
@@ -74,11 +74,12 @@ export default Vue.extend({
     user: Object,
     users: Array,
     machineConfigs: Array,
-    dataLogs: Array,
-    errLogs: Array
+    logs: Array,
+    isSystemRunning:Boolean,
+    isVmzConnecting:Boolean,
   }, data() {
     return {
-      currFeature: Feature.系統配置,
+      currFeature: Feature.主頁面,
       featureNames: getFeatureNameArr(),
       featureEnum: Feature,
       authEnum:AuthType
