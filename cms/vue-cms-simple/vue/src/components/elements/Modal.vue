@@ -4,8 +4,12 @@
       <div class="modalHeader">{{title}}</div>
       <div class="modalBody">{{body}}</div>
       <div class="modalFooter rightAlign">
-        <button class="butSpace primaryBut" @click="clickBut(true)">確定</button>
-        <button class="butSpace secondaryBut" v-if="isConfirm" @click="clickBut(false)">取消</button>
+        <button class="butSpace primaryBut" @click="clickBut(true)">{{isConfirmCancel?'確定':'是'}}</button>
+        <button
+          class="butSpace secondaryBut"
+          v-if="isConfirm"
+          @click="clickBut(false)"
+        >{{isConfirmCancel?'取消':'否'}}</button>
       </div>
     </div>
   </div>
@@ -21,6 +25,7 @@ export default Vue.extend({
     body: String,
     isShowModal: Boolean,
     isConfirm: Boolean,
+    isConfirmCancel: Boolean,
     resFunc: Function
   },
   data() {

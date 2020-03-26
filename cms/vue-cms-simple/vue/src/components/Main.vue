@@ -27,7 +27,7 @@
           />
           <LogsVue
             v-else-if="featureEnum['主頁面']===currFeature"
-            v-bind="{logs:logs,isSystemRunning:isSystemRunning,isVmzConnecting:isVmzConnecting}"
+            v-bind="{logs:logs,isSystemRunning:isSystemRunning,isVmzConnecting:isVmzConnecting,isSystemProcessStarted:isSystemProcessStarted}"
           />
           <AccountsVue v-else-if="featureEnum['帳戶管理']===currFeature" v-bind="{users:users}" />
           <VmzSettingVue v-else-if="featureEnum['VMZ設定']===currFeature" v-bind="{users:users}" />
@@ -77,6 +77,7 @@ export default Vue.extend({
     logs: Array,
     isSystemRunning:Boolean,
     isVmzConnecting:Boolean,
+    isSystemProcessStarted:Boolean,
   }, data() {
     return {
       currFeature: Feature.主頁面,

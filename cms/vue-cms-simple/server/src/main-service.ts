@@ -1,9 +1,11 @@
 import { mainState } from "./main-state";
 import { cmsLib } from "./cms";
+import { ExecResult } from "./data-tpye";
 
 
 export let mainService = {
     execStepP(): Promise<any> {
+        cmsLib.tellIsProcessStarted(mainState.execIndex > 2);
         return mainState.taskPFuncArr[mainState.execIndex]().then(
             (result: ExecResult) => {
                 if (result.isSuccess) {
@@ -12,7 +14,7 @@ export let mainService = {
                             mainState.execIndex++;
                             return mainService.execStepP();
                         }
-                        else onComple();
+                        else onComplet();
                     }
                     else return;
                 }
@@ -29,4 +31,7 @@ function onErr(errMsg: string) {
     cmsLib.sendErrLog(errMsg);//會觸發前端暫停
 }
 
-function onComple() { }
+function onComplet() {
+    mainState.execIndex = 0;
+    cmsLib.tellIsProcessStarted(false);
+}

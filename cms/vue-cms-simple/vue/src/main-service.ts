@@ -4,6 +4,7 @@ import { socket } from './socket';
 interface ModalConfig {
     isShowModal: Boolean,
     isConfirm: Boolean,
+    isConfirmCancel: Boolean,
     title: string,
     body: string,
     resFunc: Function
@@ -25,10 +26,11 @@ export let mainService = {
             modalConfig.resFunc = res;
         })
     },
-    confirm(body: string, title: string = '系統訊息'): Promise<boolean> {
+    confirm(body: string, title: string = '系統訊息',isConfirmCancel:boolean=true): Promise<boolean> {
         let modalConfig: ModalConfig = (mainService.vm as any).$children[0].modalConfig;
         modalConfig.isShowModal = true;
         modalConfig.isConfirm = true;
+        modalConfig.isConfirmCancel = true;
         modalConfig.title = title;
         modalConfig.body = body;
         return new Promise(res => {

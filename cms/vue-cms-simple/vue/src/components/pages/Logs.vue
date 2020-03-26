@@ -68,11 +68,12 @@
 import Vue from 'vue';
 import { socketLib } from '../../socket';
 import { mainData } from '../../main-data';
+import { mainService } from '../../main-service';
 
 export default Vue.extend({
   name: 'Logs',
   props: {
-    logs: Array, isSystemRunning: Boolean, isVmzConnecting: Boolean
+    logs: Array, isSystemRunning: Boolean, isVmzConnecting: Boolean, isSystemProcessStarted: Boolean
   },
   data() {
     return {
@@ -83,30 +84,48 @@ export default Vue.extend({
   },
   methods: {
     clickAuto() {
-      if (this.isDisabled) return
+      if (this.isDisabled) return;
       mainData.isSystemRunning = true;
-      socketLib.emitEvent('AUTO');
 
+      this.isDisabled = true;
+      setTimeout(() => {
+        this.isDisabled = false;
+      }, 2000);
+      
+      if (this.isSystemProcessStarted) {
+        let isPrevStep = mainService.confirm('是否從上一步重新開始?', undefined, false);
+        socketLib.emitEvent('AUTO', isPrevStep);
+      }
+      else {
+        socketLib.emitEvent('AUTO');
+      }
     },
     clickInit() {
       if (this.isDisabled) return
+      this.isDisabled = true;
+      setTimeout(() => {
+        this.isDisabled = false;
+      }, 2000);
       socketLib.emitEvent('INIT');
 
     },
     clickStop() {
       if (this.isDisabled) return
-      this.isDisabled = true;//等確實暫停才可按
+      this.isDisabled = true;
+      setTimeout(() => {
+        this.isDisabled = false;
+      }, 2000);
       socketLib.emitEvent('STOP');
 
     },
-  
+
   },
   watch: {
-      //遠端回報暫停狀態時才解除按鈕鎖定
-      isSystemRunning(nv: boolean) {
-        if (nv === false) this.isDisabled = false;
-      }
-    },
+    //遠端回報暫停狀態時才解除按鈕鎖定
+    isSystemRunning(nv: boolean) {
+      if (nv === false) this.isDisabled = false;
+    }
+  },
 });
 </script>
 

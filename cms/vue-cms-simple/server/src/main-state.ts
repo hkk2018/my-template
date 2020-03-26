@@ -1,6 +1,7 @@
 import * as net from 'net'
 import { roboArmLib } from './arm-process'
 import { ExecResult } from './data-tpye';
+import { vmzLib } from './vmz';
 
 export let mainState = {
     isPause: false,
@@ -13,7 +14,17 @@ export let mainState = {
             if (result.isSuccess && result.msg && hex2bin(result.msg)[5] === '0') return new ExecResult(true);
             else return new ExecResult(false, result.msg);
         }),
-        
+        () => roboArmLib.reqArmP('STAT').then(result => {
+            if (result.isSuccess && result.msg && hex2bin(result.msg)[8] === '0') return new ExecResult(true);
+            else return new ExecResult(false, result.msg);
+        }),
+        () => vmzLib.reqVmzP('getstation').then(result => {
+            if (result.isSuccess && result.msg) {
+
+
+            }
+
+        })
     ] as (() => Promise<any>)[],
     taskPFuncArr: [] as (() => Promise<any>)[],//因為small loop的步驟會動態增，所以每次要用時就用基底取代過來
 }

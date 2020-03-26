@@ -28,7 +28,7 @@ interface MainData {
     logs: LogObj[];
     isSystemRunning: boolean
     isVmzConnecting: boolean
-    isSystemProcessStarted: boolean//是否作過第一步
+    isSystemProcessStarted: boolean//是否作過第一步(歸零之後才算，光是歸零還不算開始作)
 
 }
 

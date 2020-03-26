@@ -35,7 +35,9 @@ export let cmsLib = {
     tellVmzConnectingState(isConnecting: boolean) {
         if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('VMZ_CONNECTION_STATE', isConnecting);
     },
-
+    tellIsProcessStarted(isStarted:boolean){
+        if (cmsLib.cmsSocket) cmsLib.cmsSocket.emit('IS_PROCESS_STARTED', isStarted);
+    }
 
 
 }

@@ -26,6 +26,11 @@ socket.on('ERR_LOG', function (log: string, reply: Function) {
     mainData.isSystemRunning = false;
 })
 
+socket.on('IS_PROCESS_STARTED', function (isSystemProcessStarted: boolean, reply: Function) {
+    mainData.isSystemProcessStarted = isSystemProcessStarted;
+});
+
+
 
 export let socketLib = {
     emitEvent(eventName: EventName, data?: any) {

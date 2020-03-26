@@ -4,7 +4,11 @@
       <LoginVue v-if="!md.user" v-bind="{users:md.users}" />
       <MainVue
         v-else
-        v-bind="{users:md.users,user:md.user,machineConfigs:md.machineConfigs,logs:md.logs,isSystemRunning:md.isSystemRunning,isVmzConnecting:md.isVmzConnecting}"
+        v-bind="{users:md.users,user:md.user,
+        machineConfigs:md.machineConfigs,
+        logs:md.logs,isSystemRunning:md.isSystemRunning,
+        isVmzConnecting:md.isVmzConnecting,
+        isSystemProcessStarted:md.isSystemProcessStarted}"
       />
     </transition>
     <ModalVue
@@ -46,6 +50,7 @@ export default Vue.extend({
         isConfirm: false,
         title: null,
         body: null,
+        isConfirmCancel:true,
         resFunc: null,
       },
       informConfig: {
