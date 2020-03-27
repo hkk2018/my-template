@@ -7,29 +7,35 @@
         <br />
         <br />
         <div>
-          <div
-            class="controlBut auto"
+          <input
             :class="{disabled:isDisabled}"
             v-if="!isSystemRunning"
             :disabled="isDisabled"
             @click="clickAuto"
-          >AUTO</div>
-          <div
-            class="controlBut stop"
+            value="AUTO"
+            type="button"
+            class="ctrlBut"
+          />
+          <input
             :class="{disabled:isDisabled}"
             v-else
             :disabled="isDisabled"
             @click="clickStop"
-          >STOP</div>
+            value="STOP"
+            type="button"
+            class="ctrlBut"
+          />
         </div>
         <br />
         <br />
-        <div
-          class="controlBut init"
+        <input
           :class="{disabled:isDisabled||isSystemRunning}"
           :disabled="isDisabled||isSystemRunning"
           @click="clickInit"
-        >INITIAL</div>
+          value="INITIAL"
+          type="button"
+          class="ctrlBut"
+        />
       </div>
       <div class="connectionTip" :class="{connecting:isVmzConnecting}">VMZ Connection</div>
     </div>
@@ -187,6 +193,7 @@ export default Vue.extend({
   color: white;
 }
 .textLine {
+  user-select: none;
   margin-bottom: 1rem;
   word-break: break-all; // https://stackoverflow.com/questions/22369140/html-css-force-wrap-number-displayed-in-chrome
 }
@@ -221,6 +228,18 @@ export default Vue.extend({
   height: 100%;
   box-sizing: border-box;
 }
+.ctrlBut {
+  font-size: 1.5rem;
+  margin: 0 auto;
+  display: block;
+}
+.ctrlBut:hover {
+  // filter: brightness(105%);
+}
+.ctrlBut.disabled {
+  opacity: 0.5;
+}
+
 .controlBut {
   font-size: 2rem;
   text-align: center;
@@ -251,12 +270,13 @@ export default Vue.extend({
   opacity: 0.5;
 }
 .connectionTip {
-  background-color: greenyellow;
+  background-color: red;
   font-size: 1.2rem;
   padding: 1rem;
   opacity: 0.5;
 }
 .connectionTip.connecting {
   opacity: 1;
+  background-color: greenyellow;
 }
 </style>
