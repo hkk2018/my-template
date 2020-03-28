@@ -1,4 +1,8 @@
 import * as http from 'http';
+import * as fs from 'fs';
+import * as child_process from 'child_process';
+
+
 import io from 'socket.io';
 import { mainState } from './main-state';
 import { vmzLib } from './vmz';
@@ -105,12 +109,19 @@ serv_io.sockets.on('connection', function (socket) {
         }).then(() => {
             reply();
         })
-
     })
     socket.on('VMZ_CONNECTION_STATE', function (data: null, reply: Function) {
         console.log('VMZ connection state checked by CMS: isConnected===' + vmzLib.isSocketAlive);
         reply(vmzLib.isSocketAlive);
     })
+
+    socket.on('WRITE_BACK_LOG', function (logBack: WriteLogBackFormat, reply: Function) {
+        const path = `./logs/${logBack.dateFileName}.txt`;
+        fs.appendFileSync(path, logBack.msg+'\r\n');
+    });
+    socket.on('OPEN_FOLDER', function (data: null, reply: Function) {
+        child_process.exec('start "" "logs"');
+    });
 
 
     // //傳訊息給客戶端
@@ -126,3 +137,9 @@ serv_io.sockets.on('connection', function (socket) {
 });
 
 
+class WriteLogBackFormat {
+    constructor(public msg: string, timeStr: string) {
+        this.dateFileName = timeStr.split(' ')[0].replace(/\//g, '');
+    }
+    dateFileName: string;
+}

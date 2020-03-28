@@ -11,6 +11,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var http = __importStar(require("http"));
+var fs = __importStar(require("fs"));
+var child_process = __importStar(require("child_process"));
 var socket_io_1 = __importDefault(require("socket.io"));
 var main_state_1 = require("./main-state");
 var vmz_1 = require("./vmz");
@@ -119,6 +121,13 @@ serv_io.sockets.on('connection', function (socket) {
         console.log('VMZ connection state checked by CMS: isConnected===' + vmz_1.vmzLib.isSocketAlive);
         reply(vmz_1.vmzLib.isSocketAlive);
     });
+    socket.on('WRITE_BACK_LOG', function (logBack, reply) {
+        var path = "./logs/" + logBack.dateFileName + ".txt";
+        fs.appendFileSync(path, logBack.msg + '\r\n');
+    });
+    socket.on('OPEN_FOLDER', function (data, reply) {
+        child_process.exec('start "" "logs"');
+    });
     // //傳訊息給客戶端
     // setInterval(() => {
     //     socketEmitP(socket, 'DATA_LOG', 'data test' + new Date().toLocaleTimeString()).then((data) => {
@@ -129,3 +138,10 @@ serv_io.sockets.on('connection', function (socket) {
     //     socketEmitP(socket, 'ERR_LOG', 'err test' + new Date().toLocaleTimeString());
     // }, 5000)
 });
+var WriteLogBackFormat = /** @class */ (function () {
+    function WriteLogBackFormat(msg, timeStr) {
+        this.msg = msg;
+        this.dateFileName = timeStr.split(' ')[0].replace(/\//g, '');
+    }
+    return WriteLogBackFormat;
+}());

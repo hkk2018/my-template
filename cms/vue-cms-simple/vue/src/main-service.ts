@@ -1,5 +1,5 @@
 import { mainData, MachineConfig, PartConfig, AxisInfo, LogObj } from './main-data';
-import { socket } from './socket';
+import { socket, socketLib } from './socket';
 
 interface ModalConfig {
     isShowModal: Boolean,
@@ -23,7 +23,7 @@ export let mainService = {
         modalConfig.title = title;
         modalConfig.body = body;
         console.log(modalConfig);
-        
+
         return new Promise(res => {
             modalConfig.resFunc = res;
         })
@@ -107,7 +107,9 @@ export let mainService = {
     handleLogs(logMsg: string, isErr: boolean = false) {
 
         let sizeLimit = 3000;
-        mainData.logs.splice(0, 0, new LogObj(logMsg, isErr));
+        let lo = new LogObj(logMsg, isErr);
+        socketLib.emitEvent('WRITE_BACK_LOG', new WriteLogBackFormat(lo.receivedT + '  ' + lo.logMsg, lo.receivedT));
+        mainData.logs.splice(0, 0, lo);
         if (mainData.logs.length > sizeLimit) {
             mainData.logs.splice(mainData.logs.length - 1, 1)
         }
@@ -129,3 +131,9 @@ export let mainService = {
 
 
 
+class WriteLogBackFormat {
+    constructor(public msg: string, timeStr: string) {
+        this.dateFileName = timeStr.split(' ')[0].replace(/\//g, '');
+    }
+    dateFileName: string;
+}

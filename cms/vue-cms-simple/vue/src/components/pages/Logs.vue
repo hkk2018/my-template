@@ -50,7 +50,7 @@
           >Err</div>
         </div>
 
-        <input type="button" value="Save" style="margin-right:2rem" @click="downLoadLogs" />
+        <input type="button" value="History" style="margin-right:2rem" @click="openLogFolder" />
       </div>
       <div class="logBoxWrapper center">
         <div class="logBox">
@@ -137,15 +137,18 @@ export default Vue.extend({
       socketLib.emitEvent('STOP', null, () => {
         this.isDisabled = false;
         mainData.isSystemRunning = false;
+        mainService.alert('已暫停，請按AUTO繼續或INITIAL重置');
       });
     },
-    downLoadLogs() {
-      let logs: LogObj[] = this.logs as any;
-      let str = '';
-      for (let i = 0; i < logs.length; i++) {
-        str += logs[i].receivedT + ' ' + logs[i].logMsg + '\n\r';
-      }
-      mainService.download(str);
+    openLogFolder() {
+
+      socketLib.emitEvent('OPEN_FOLDER');
+      // let logs: LogObj[] = this.logs as any;
+      // let str = '';
+      // for (let i = 0; i < logs.length; i++) {
+      //   str += logs[i].receivedT + ' ' + logs[i].logMsg + '\n\r';
+      // }
+      // mainService.download(str);
     }
 
   },
@@ -188,7 +191,7 @@ export default Vue.extend({
 }
 .textLine {
   // white-space:pre; //會造成不換行
-  user-select: none;
+  // user-select: none;
   margin-bottom: 1rem;
   word-break: break-all; // https://stackoverflow.com/questions/22369140/html-css-force-wrap-number-displayed-in-chrome
 }

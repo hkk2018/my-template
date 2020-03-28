@@ -30,6 +30,7 @@ socket.on('DATA_LOG', function (log: string, reply: Function) {
 socket.on('ERR_LOG', function (log: string, reply: Function) {
     mainService.handleLogs(log, true);
     mainData.isSystemRunning = false;
+    if (mainData.user) mainService.alert('動作中斷，請按AUTO繼續或INITIAL重置');
 })
 
 socket.on('PROCESS_DONE', function (log: string, reply: Function) {
@@ -65,6 +66,6 @@ export let socketLib = {
     }
 }
 
-type EventName = 'INIT' | 'AUTO' | 'STOP'
+type EventName = 'INIT' | 'AUTO' | 'STOP'|'WRITE_BACK_LOG'|'OPEN_FOLDER';
 
 
