@@ -7,39 +7,35 @@
         <br />
         <br />
         <div>
-          <input
+          <div
             :class="{disabled:isDisabled}"
             v-if="!isSystemRunning"
             :disabled="isDisabled"
             @click="clickAuto"
-            value="AUTO"
             type="button"
-            class="ctrlBut"
-          />
-          <input
+            class="controlBut auto"
+          >AUTO</div>
+          <div
             :class="{disabled:isDisabled}"
             v-else
             :disabled="isDisabled"
             @click="clickStop"
-            value="STOP"
             type="button"
-            class="ctrlBut"
-          />
+            class="controlBut stop"
+          >STOP</div>
         </div>
         <br />
-        <br />
-        <input
+        <div
           :class="{disabled:isDisabled||isSystemRunning}"
           :disabled="isDisabled||isSystemRunning"
           @click="clickInit"
-          value="INITIAL"
           type="button"
-          class="ctrlBut"
-        />
+          class="controlBut init"
+        >INITIAL</div>
       </div>
       <div class="connectionTip" :class="{connecting:isVmzConnecting}">VMZ Connection</div>
     </div>
-    <div class="fullH splitV" style="flex-grow:1">
+    <div class="fullH splitV" style="flex-grow:1;height:100%">
       <div class="switcherRow">
         <div>
           <div
@@ -64,9 +60,9 @@
             :key="index"
             v-show="(logObj.isErr&&isErrLog)||(!logObj.isErr&&isDataLog)"
           >
-            <span>{{logObj.receivedT}}</span>
-            &nbsp;
-            {{logObj.logMsg}}
+            <div class="receivedTBox">{{logObj.receivedT}}</div>
+
+            <span>{{logObj.logMsg}}</span>
           </div>
         </div>
       </div>
@@ -101,12 +97,11 @@ export default Vue.extend({
         mainService.alert('尚未連線至系統');
         return;
       }
-      socketLib.emitEvent('AUTO');
-      mainData.isSystemRunning = true;
       this.isDisabled = true;
-      setTimeout(() => {
+      socketLib.emitEvent('AUTO', null, () => {
         this.isDisabled = false;
-      }, 2000);
+        mainData.isSystemRunning = true;
+      });
 
       // 沒有要從上一步開始就不用使用到 isSystemProcessStarted
       // if (this.isSystemProcessStarted) {
@@ -118,7 +113,7 @@ export default Vue.extend({
       // }
     },
     clickInit() {
-      if (this.isDisabled) return
+      if (this.isDisabled|| mainData.isSystemRunning) return
       if (socketLib.socket.disconnected) {
         //雖然發送時有檢查，但由於有些未跟系統確認就寫定的邏輯，遇到未連線的系統行為會異常，所以還是先於任何按鈕邏輯作檢查
         mainService.alert('尚未連線至系統');
@@ -155,10 +150,7 @@ export default Vue.extend({
 
   },
   watch: {
-    //遠端回報暫停狀態時才解除按鈕鎖定
-    isSystemRunning(nv: boolean) {
-      if (nv === false) this.isDisabled = false;
-    }
+
   },
 });
 </script>
@@ -175,6 +167,8 @@ export default Vue.extend({
 //   background-color: var(--light-legacy-theme);
 // }
 .logBoxWrapper {
+  width: 100%;
+  box-sizing: border-box;
   height: 100%;
   border: 1px transparent; //prevent margin collapse
   padding: 2rem;
@@ -193,9 +187,14 @@ export default Vue.extend({
   color: white;
 }
 .textLine {
+  // white-space:pre; //會造成不換行
   user-select: none;
   margin-bottom: 1rem;
   word-break: break-all; // https://stackoverflow.com/questions/22369140/html-css-force-wrap-number-displayed-in-chrome
+}
+.receivedTBox {
+  display: inline-block;
+  margin-right: 1rem;
 }
 .switcherRow {
   margin: 1rem 0 0 2rem;
@@ -214,6 +213,7 @@ export default Vue.extend({
   text-align: center;
   transition: 0.3s;
   cursor: pointer;
+  user-select: none;
 }
 .switherElement.selected {
   background-color: #25acd9;
@@ -224,31 +224,39 @@ export default Vue.extend({
   padding-right: 0;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: space-between;
   height: 100%;
   box-sizing: border-box;
-}
-.ctrlBut {
-  font-size: 1.5rem;
-  margin: 0 auto;
-  display: block;
-}
-.ctrlBut:hover {
-  // filter: brightness(105%);
-}
-.ctrlBut.disabled {
-  opacity: 0.5;
+  flex: 0 0 13rem;
+  // flex-grow: 1;
 }
 
+// .ctrlBut {
+//   font-size: 1.5rem;
+//   margin: 0 auto;
+//   display: block;
+// }
+// .ctrlBut:hover {
+//   // filter: brightness(105%);
+// }
+// .ctrlBut.disabled {
+//   opacity: 0.5;
+// }
+
 .controlBut {
-  font-size: 2rem;
+  // font-size: 2rem;
   text-align: center;
-  border-radius: 1rem;
-  padding: 0.5rem;
-  border-style: solid;
-  border-width: 1px;
+  // border-radius: 1rem;
+  // padding: 0.5rem;
+  // border-style: solid;
+  // border-width: 1px;
+  width: 5.5rem;
   cursor: pointer;
   user-select: none;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
 }
 .controlBut:hover {
   filter: brightness(110%);
@@ -257,23 +265,30 @@ export default Vue.extend({
   opacity: 0.5;
 }
 .controlBut.auto {
-  background-color: greenyellow;
+  background-color: rgb(32, 201, 151);
 }
 .controlBut.stop {
-  background-color: pink;
+  background-color: rgb(248, 108, 107);
 }
 
 .controlBut.init {
-  background-color: darkturquoise;
+  background-color: rgb(99, 194, 222);
 }
 .controlBut.disabled {
   opacity: 0.5;
 }
 .connectionTip {
-  background-color: red;
-  font-size: 1.2rem;
-  padding: 1rem;
-  opacity: 0.5;
+  background-color: rgb(248, 108, 107);
+  // font-size: 1.2rem;
+  // padding: 1rem;
+  // text-align: center;
+
+    width: 7rem;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--border);
+  // border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
 }
 .connectionTip.connecting {
   opacity: 1;

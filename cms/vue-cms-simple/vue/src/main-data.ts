@@ -28,8 +28,7 @@ interface MainData {
     logs: LogObj[];
     isSystemRunning: boolean
     isVmzConnecting: boolean
-    isSystemProcessStarted: boolean//是否作過第一步(第一步之後通通有兩個選擇的設計，才要用到此參數，但目前不是，單純留著)
-
+    isSystemProcessStarted: boolean//否表未開始或已完成
 }
 
 export class MachineConfig {

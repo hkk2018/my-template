@@ -17,7 +17,8 @@
       isConfirm:modalConfig.isConfirm,
       title:modalConfig.title,
       body:modalConfig.body,
-      resFunc:modalConfig.resFunc
+      resFunc:modalConfig.resFunc,
+      isConfirmCancel:modalConfig.isConfirmCancel
       }"
       @on-modal-close="onModalClose"
     />

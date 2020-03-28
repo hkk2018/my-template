@@ -7,6 +7,7 @@ exports.mainService = {
     execStepP: function () {
         return main_state_1.mainState.taskPFuncArr[main_state_1.mainState.execIndex]().then(function (successMsg) {
             main_state_1.mainState.execIndex++;
+            // cmsLib.sendDataLog('完成');
             //一般成功訊息就是 <、finish等，預設不顯示，有特殊需求另外在task裡面增
             if (!main_state_1.mainState.isPause) {
                 if (main_state_1.mainState.taskPFuncArr[main_state_1.mainState.execIndex]) { //還有下一步的話
@@ -20,7 +21,7 @@ exports.mainService = {
                 return;
             }
         }, function (errMsg) {
-            onErr(errMsg); //致使暫停
+            onExecStepErr(errMsg); //致使暫停
         });
     },
     startProcess: function () {
@@ -38,11 +39,13 @@ exports.mainService = {
         exports.mainService.execStepP();
     },
     hex2bin: function (hex) {
-        return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+        var bin = (parseInt(hex, 16)).toString(2);
+        bin = '0'.repeat((16 - bin.length));
+        return bin;
     }
 };
-function onErr(errMsg) {
-    console.log('err: ' + errMsg);
+function onExecStepErr(errMsg) {
+    console.log('Err: ' + errMsg);
     cms_1.cmsLib.sendErrLog(errMsg); //會觸發前端暫停
 }
 // onUnfixableErr(specialErrMsg);//未與vmz或手臂連線、斷線，或其他不知名錯誤（程序無法handle者）

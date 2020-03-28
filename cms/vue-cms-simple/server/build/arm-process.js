@@ -11,7 +11,8 @@ var net = __importStar(require("net"));
 var cms_1 = require("./cms");
 //設定
 var port = 8001; // Datalogger port
-var host = '192.168.29.130'; // Datalogger IP address
+// const host = '192.168.29.130';    // Datalogger IP address
+var host = 'localhost';
 //指令
 console.log('program starts');
 var socket;
@@ -19,19 +20,32 @@ exports.roboArmLib = {
     strStarter: 'SVON',
     strStarter2: 'HOM',
     roboArmSocket: null,
-    resolveFunc: null,
+    resolveFunc: (function () { }),
     //直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於VmzReply之msg中，以便後續處裡
     reqArmP: function (command) {
         return new Promise(function (res, rej) {
             //建立socket過且處於連線中才可調用此函數
-            if (exports.roboArmLib.roboArmSocket != null && exports.roboArmLib.roboArmSocket.connecting) {
-                cms_1.cmsLib.sendDataLog(command);
-                command += '\r\n';
-                exports.roboArmLib.roboArmSocket.write(command, 'ascii');
+            if (exports.roboArmLib.roboArmSocket != null) {
+                exports.roboArmLib.roboArmSocket.write('STAT\r\n', 'ascii');
+                // cmsLib.sendDataLog('STAT');
                 exports.roboArmLib.resolveFunc = res;
             }
             else
                 rej('未連線至機械手臂');
+        }).then(function (stringFromArm) {
+            if (stringFromArm === '?')
+                return Promise.reject('Failed to chceck arm stat.');
+            else {
+                cms_1.cmsLib.sendDataLog('Arm stat before excuting: ' + stringFromArm); //show stat
+                return new Promise(function (res1, rej1) {
+                    var _a;
+                    cms_1.cmsLib.sendDataLog('Execute(to arm): ' + command);
+                    console.log(command);
+                    command += '\r\n';
+                    (_a = exports.roboArmLib.roboArmSocket) === null || _a === void 0 ? void 0 : _a.write(command, 'ascii'); //基本上已經非null了
+                    exports.roboArmLib.resolveFunc = res1;
+                });
+            }
         }).then(function (stringFromArm) {
             if (stringFromArm === '?')
                 return Promise.reject(stringFromArm);
@@ -43,8 +57,9 @@ exports.roboArmLib = {
         console.log('try to connect to arm');
         cms_1.cmsLib.sendDataLog('try to connect to arm');
         socket = net.createConnection(port, host, function () {
-            cms_1.cmsLib.sendDataLog('arm is connected');
-            console.log('arm is connected');
+            var succMsg = 'Successfully connected to arm.';
+            cms_1.cmsLib.sendDataLog(succMsg);
+            console.log(succMsg);
             exports.roboArmLib.roboArmSocket = socket;
             //---listening
             socket.on('data', function (data) {
@@ -163,7 +178,7 @@ var strStarter = 'SVON\r\n'; //on
 var strStarter2 = 'HOM\r\n'; //home
 var delayIndex = 0;
 var sendDelay = 6000;
-function hex2bin(hex) {
+function hex2bin_Dreprecatd(hex) {
     return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
 }
 function sendToArm(message) {

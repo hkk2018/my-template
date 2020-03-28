@@ -1,7 +1,7 @@
 <template>
   <div class="mainBox">
     <div class="headerBox">
-      <div class="logoBox centerV">CompanyImg</div>
+      <div class="logoBox">HHC Auto Co.,Ltd</div>
       <div class="headerRightBox">
         <div>{{user.accountName}}</div>
         <input type="button" value="登出" class="butSpace" @click="logout" />
@@ -109,7 +109,8 @@ export default Vue.extend({
   display: flex;
 }
 .logoBox {
-  width: 5rem;
+  display:flex;
+  align-items: center;;
   height: 100%;
   padding-left: 1rem;
 }

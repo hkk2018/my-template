@@ -8,9 +8,10 @@ export let mainService = {
         return mainState.taskPFuncArr[mainState.execIndex]().then(
             successMsg => {
                 mainState.execIndex++;
+                // cmsLib.sendDataLog('完成');
                 //一般成功訊息就是 <、finish等，預設不顯示，有特殊需求另外在task裡面增
                 if (!mainState.isPause) {
-                    if (mainState.taskPFuncArr[mainState.execIndex ]) {//還有下一步的話
+                    if (mainState.taskPFuncArr[mainState.execIndex]) {//還有下一步的話
                         return mainService.execStepP();
                     }
                     else onComplete();
@@ -21,7 +22,7 @@ export let mainService = {
                 }
             },
             (errMsg: string) => {
-                onErr(errMsg);//致使暫停
+                onExecStepErr(errMsg);//致使暫停
             }
         )
     },
@@ -36,17 +37,19 @@ export let mainService = {
         mainService.execStepP();
     },
     countinueProcess() {
-        mainState.isPause=false;
+        mainState.isPause = false;
         mainService.execStepP();
     },
     hex2bin(hex: string) {
-        return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
+        let bin = (parseInt(hex, 16)).toString(2);
+        bin = '0'.repeat((16 - bin.length));
+        return bin;
     }
 }
 
 
-function onErr(errMsg: string) {
-    console.log('err: '+errMsg);
+function onExecStepErr(errMsg: string) {
+    console.log('Err: ' + errMsg);
     cmsLib.sendErrLog(errMsg);//會觸發前端暫停
 }
 

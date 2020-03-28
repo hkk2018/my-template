@@ -22,6 +22,8 @@ export let mainService = {
         modalConfig.isConfirm = false;
         modalConfig.title = title;
         modalConfig.body = body;
+        console.log(modalConfig);
+        
         return new Promise(res => {
             modalConfig.resFunc = res;
         })
@@ -35,6 +37,7 @@ export let mainService = {
         modalConfig.body = body;
         return new Promise(res => {
             modalConfig.resFunc = res;
+            modalConfig.isConfirmCancel = false;
         })
     },
     inform(str: string) {

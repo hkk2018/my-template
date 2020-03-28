@@ -29,17 +29,25 @@ export let cmsLib = {
         cmsLib.cmsSocket?.emit('ERR_LOG', 'ERR: ' + msg);
     },
     sendUnfixableErrLog(msg: string) {
-        cmsLib.cmsSocket?.emit('UNFIXABLE_ERR_LOG', msg);
+        // cmsLib.cmsSocket?.emit('UNFIXABLE_ERR_LOG', msg);
     },
+
     tellVmzConnectingState(isConnecting: boolean) {
         cmsLib.cmsSocket?.emit('VMZ_CONNECTION_STATE', isConnecting);
     },
-    tellIsProcessStarted(isStarted: boolean) {
-        // cmsLib.cmsSocket?.emit('IS_PROCESS_STARTED', isStarted);
+    tellProcessStarted() {
+        // cmsLib.cmsSocket?.emit('PROCESS_STARTED');
     },
-    askKeyInNumberP(): Promise<string> {
+    tellProcessDone() {
+        cmsLib.cmsSocket?.emit('PROCESS_DONE');
+    },
+    askKeyInNumberP(askTest: string = '掃描失敗，請手動輸入Wafer Id：'): Promise<string> {
         return new Promise((res, rej) => {
-            cmsLib.cmsSocket?.emit('ASK_KEY_IN_NUMBER', null, onReplied);
+            //稍微讓前面要傳給客戶端看的waferId先顯示出來，有時候會後來的訊息會快過先傳的
+            //（這邊會使前端出現prompt而卡死前端js，所以如果Id後到則要等輸入框結束後才會出現）
+            setTimeout(() => {
+                cmsLib.cmsSocket?.emit('ASK_KEY_IN_NUMBER', askTest, onReplied);
+            }, 500);
             function onReplied(numberStr: string) {
                 res(numberStr);
             }
@@ -50,7 +58,7 @@ export let cmsLib = {
 // socket.io需要聽http.server
 let serv_io = io.listen(server);
 serv_io.sockets.on('connection', function (socket) {
-    console.log('cms is connected.')
+    console.log('cms is connected.');
     cmsLib.cmsSocket = socket;
     // socket.on('SET_AS_DEFAULT_MACHINESEETING', function (data: FromFront.MachineSetting, reply: Function) {
     //     console.log(data);
@@ -60,12 +68,16 @@ serv_io.sockets.on('connection', function (socket) {
 
 
     socket.on('INIT', function (data: null, reply: Function) {
+        console.log('INIT');
         mainState.isStarted = false;
         //不參與mainState的execIndex，自己在這邊作
+        console.log(roboArmLib.strStarter);
         roboArmLib.reqArmP(roboArmLib.strStarter).then(() => {
-            return roboArmLib.reqArmP(roboArmLib.strStarter2)
+            console.log(roboArmLib.strStarter2);
+            return roboArmLib.reqArmP(roboArmLib.strStarter2);
         }).then(() => {
-            roboArmLib.reqArmP('STAT').then(msg => {
+            roboArmLib.reqArmP('STAT' + '\r\n').then(msg => {
+                console.log(msg)
                 if (mainService.hex2bin(msg)[5] === '0') {
                     reply({ isErr: false, msg: msg } as RespObj);
                 }
@@ -73,15 +85,16 @@ serv_io.sockets.on('connection', function (socket) {
             })
         }).catch(err => {
             console.log(err);//怕字串化錯誤會crash，就傳個自訂字串
-            reply({ isErr: true, msg: typeof err === 'string' ? err : '異常錯誤' } as RespObj);
+            reply({ isErr: true, msg: typeof err === 'string' ? err : '機械手臂異常' } as RespObj);
         });
 
-        console.log('INIT');
+
     })
     socket.on('AUTO', function (data: any, reply: Function) {
         console.log('AUTO');
         if (mainState.isStarted) mainService.countinueProcess();
         else mainService.startProcess();
+        reply();
     })
 
     socket.on('STOP', function (data: null, reply: Function) {
@@ -95,8 +108,8 @@ serv_io.sockets.on('connection', function (socket) {
 
     })
     socket.on('VMZ_CONNECTION_STATE', function (data: null, reply: Function) {
-        console.log('VMZ Connection state checked by CMS');
-        reply(Boolean(vmzLib.vmzSocket && vmzLib.vmzSocket.connecting));
+        console.log('VMZ connection state checked by CMS: isConnected===' + vmzLib.isSocketAlive);
+        reply(vmzLib.isSocketAlive);
     })
 
 

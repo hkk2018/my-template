@@ -1,26 +1,28 @@
 import { roboArmLib } from './arm-process';
 import { cmsLib } from './cms';
 import { vmzLib } from './vmz';
+import { mainService } from './main-service';
 
 export let mainState = {
     isPause: false,
     isStarted: false,
     execIndex: 0,
-    pauseInformCmsRes:()=>{},
+    pauseInformCmsRes: () => { },
     stationWaferInfo: '',//'A4B6C0'
     taskPFuncArrBase: [
         () => roboArmLib.reqArmP(roboArmLib.strStarter),
         () => roboArmLib.reqArmP(roboArmLib.strStarter2),
         () => roboArmLib.reqArmP('STAT').then(msg => {
-            if (hex2bin(msg)[5] === '0') return;
+            if (mainService.hex2bin(msg)[5] === '0') return;
             else return Promise.reject(msg);
         }),
         () => roboArmLib.reqArmP('STAT').then(msg => {
-            if (hex2bin(msg)[8] === '0') return;
+            if (mainService.hex2bin(msg)[8] === '0') return;
             else return Promise.reject(msg);
         }),
         () => vmzLib.reqVmzP('getstation').then(msg => {
             mainState.stationWaferInfo = msg; //'A4B6C0'
+            cmsLib.sendDataLog(msg);
         }),
         //從sendToArm('SGRP A')分成三部分，子迴圈的內容根據狀況動態增
         () => handleWaferSizeProcP(0),
@@ -28,7 +30,8 @@ export let mainState = {
         () => handleWaferSizeProcP(2),
         () => Promise.resolve().then(() => {
             cmsLib.sendDataLog('排程已全數執行完畢，可重新開始');
-            mainState.isStarted=false;
+            mainState.isStarted = false;
+            cmsLib.tellProcessDone();
             return 'Process Done';
         })
     ] as (() => Promise<string>)[],
@@ -36,9 +39,6 @@ export let mainState = {
 }
 
 
-function hex2bin(hex: string) {
-    return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
-}
 
 function handleWaferSizeProcP(stationIndex: 0 | 1 | 2): Promise<string> {
     let waferSize = mainState.stationWaferInfo[stationIndex * 2 + 1];
@@ -62,20 +62,21 @@ function handleWaferSizeProcP(stationIndex: 0 | 1 | 2): Promise<string> {
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP(`GET ${stationSymbolUpperCase}, ${i + 1}`));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP(`PUT D, 1`));
 
-                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP());
+                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP('startw'));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP(`GET D, 1`));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP(`MTCS E`));
 
-                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP().then(waferId => {
+                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP('starto').then(waferId => {
                                     cmsLib.sendDataLog('waferId: ' + waferId);
                                     return 'get and show waferId sucess';
                                 }));
-                                //失敗的話會從輸入數字重來
-                                taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP().then(numberStr => {
-                                    return vmzLib.reqVmzP(numberStr);
-                                }));
+                                // //失敗的話會從輸入數字重來
+                                // taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP().then(numberStr => {
+                                //     console.log('number input from cms: ' + numberStr);
+                                //     return vmzLib.reqVmzP(numberStr as any);
+                                // }));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP('PUT F, 1'));
-                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP());
+                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP('startv'));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP('GET F, 1'));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP(`PUT ${stationSymbolUpperCase}, ${i + 1}`));
                             }

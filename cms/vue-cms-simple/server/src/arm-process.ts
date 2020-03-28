@@ -2,8 +2,8 @@ import * as net from 'net';
 import { cmsLib } from './cms';
 //設定
 const port = 8001;    // Datalogger port
-const host = '192.168.29.130';    // Datalogger IP address
-
+// const host = '192.168.29.130';    // Datalogger IP address
+const host = 'localhost';
 
 //指令
 console.log('program starts');
@@ -14,18 +14,29 @@ export let roboArmLib = {
 	strStarter: 'SVON', //on
 	strStarter2: 'HOM', //home
 	roboArmSocket: null as net.Socket | null,
-	resolveFunc: null as any,
+	resolveFunc: (() => { }) as any,
 	//直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於VmzReply之msg中，以便後續處裡
 	reqArmP(command: string): Promise<string> {
 		return new Promise((res: (str: string) => void, rej) => {
 			//建立socket過且處於連線中才可調用此函數
-			if (roboArmLib.roboArmSocket != null && roboArmLib.roboArmSocket.connecting) {
-				cmsLib.sendDataLog(command);
-				command += '\r\n';
-				roboArmLib.roboArmSocket.write(command, 'ascii');
+			if (roboArmLib.roboArmSocket != null) {
+				roboArmLib.roboArmSocket.write('STAT\r\n', 'ascii');
+				// cmsLib.sendDataLog('STAT');
 				roboArmLib.resolveFunc = res;
 			}
 			else rej('未連線至機械手臂')
+		}).then((stringFromArm) => {
+			if (stringFromArm === '?') return Promise.reject('Failed to chceck arm stat.')
+			else {
+				cmsLib.sendDataLog('Arm stat before excuting: ' + stringFromArm);//show stat
+				return new Promise((res1: (str: string) => void, rej1) => {
+					cmsLib.sendDataLog('Execute(to arm): ' + command);
+					console.log(command);
+					command += '\r\n';
+					roboArmLib.roboArmSocket?.write(command, 'ascii');//基本上已經非null了
+					roboArmLib.resolveFunc = res1;
+				})
+			}
 		}).then((stringFromArm: string) => {
 			if (stringFromArm === '?') return Promise.reject(stringFromArm);
 			else return stringFromArm;
@@ -35,8 +46,9 @@ export let roboArmLib = {
 		console.log('try to connect to arm');
 		cmsLib.sendDataLog('try to connect to arm');
 		socket = net.createConnection(port, host, () => {
-			cmsLib.sendDataLog('arm is connected');
-			console.log('arm is connected');
+			let succMsg = 'Successfully connected to arm.';
+			cmsLib.sendDataLog(succMsg);
+			console.log(succMsg);
 			roboArmLib.roboArmSocket = socket;
 
 			//---listening
@@ -164,7 +176,7 @@ const strStarter2 = 'HOM\r\n'; //home
 let delayIndex = 0;
 let sendDelay = 6000;
 
-function hex2bin(hex: string) {
+function hex2bin_Dreprecatd(hex: string) {
 	return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
 }
 function sendToArm(message: string) {

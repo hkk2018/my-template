@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var arm_process_1 = require("./arm-process");
 var cms_1 = require("./cms");
 var vmz_1 = require("./vmz");
+var main_service_1 = require("./main-service");
 exports.mainState = {
     isPause: false,
     isStarted: false,
@@ -13,19 +14,20 @@ exports.mainState = {
         function () { return arm_process_1.roboArmLib.reqArmP(arm_process_1.roboArmLib.strStarter); },
         function () { return arm_process_1.roboArmLib.reqArmP(arm_process_1.roboArmLib.strStarter2); },
         function () { return arm_process_1.roboArmLib.reqArmP('STAT').then(function (msg) {
-            if (hex2bin(msg)[5] === '0')
+            if (main_service_1.mainService.hex2bin(msg)[5] === '0')
                 return;
             else
                 return Promise.reject(msg);
         }); },
         function () { return arm_process_1.roboArmLib.reqArmP('STAT').then(function (msg) {
-            if (hex2bin(msg)[8] === '0')
+            if (main_service_1.mainService.hex2bin(msg)[8] === '0')
                 return;
             else
                 return Promise.reject(msg);
         }); },
         function () { return vmz_1.vmzLib.reqVmzP('getstation').then(function (msg) {
             exports.mainState.stationWaferInfo = msg; //'A4B6C0'
+            cms_1.cmsLib.sendDataLog(msg);
         }); },
         //從sendToArm('SGRP A')分成三部分，子迴圈的內容根據狀況動態增
         function () { return handleWaferSizeProcP(0); },
@@ -34,14 +36,12 @@ exports.mainState = {
         function () { return Promise.resolve().then(function () {
             cms_1.cmsLib.sendDataLog('排程已全數執行完畢，可重新開始');
             exports.mainState.isStarted = false;
+            cms_1.cmsLib.tellProcessDone();
             return 'Process Done';
         }); }
     ],
     taskPFuncArr: [],
 };
-function hex2bin(hex) {
-    return ("00000000" + (parseInt(hex, 16)).toString(2)).substr(-8);
-}
 function handleWaferSizeProcP(stationIndex) {
     var waferSize = exports.mainState.stationWaferInfo[stationIndex * 2 + 1];
     //waferSize等於0的站點跳過
@@ -65,19 +65,20 @@ function handleWaferSizeProcP(stationIndex) {
                             if (scannedDataStr[i] === '1') {
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("GET " + stationSymbolUpperCase + ", " + (i + 1)); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("PUT D, 1"); });
-                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP(); });
+                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('startw'); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("GET D, 1"); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("MTCS E"); });
-                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP().then(function (waferId) {
+                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('starto').then(function (waferId) {
                                     cms_1.cmsLib.sendDataLog('waferId: ' + waferId);
                                     return 'get and show waferId sucess';
                                 }); });
-                                //失敗的話會從輸入數字重來
-                                taskPFuncsToAdd.push(function () { return cms_1.cmsLib.askKeyInNumberP().then(function (numberStr) {
-                                    return vmz_1.vmzLib.reqVmzP(numberStr);
-                                }); });
+                                // //失敗的話會從輸入數字重來
+                                // taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP().then(numberStr => {
+                                //     console.log('number input from cms: ' + numberStr);
+                                //     return vmzLib.reqVmzP(numberStr as any);
+                                // }));
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP('PUT F, 1'); });
-                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP(); });
+                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('startv'); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP('GET F, 1'); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("PUT " + stationSymbolUpperCase + ", " + (i + 1)); });
                             }
