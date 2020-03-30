@@ -109,17 +109,33 @@ serv_io.sockets.on('connection', function (socket) {
         }).then(() => {
             reply();
         })
+    });
+
+    socket.on('INIT_VMZ', function (data: any, reply: Function) {
+        console.log('INIT_VMZ');
+        vmzLib.reqVmzP('vmzinit').then(() => {
+            reply();
+        }).catch(errMsg => {
+
+            cmsLib.sendErrLog(errMsg);
+            reply();
+        })
     })
+
     socket.on('VMZ_CONNECTION_STATE', function (data: null, reply: Function) {
         console.log('VMZ connection state checked by CMS: isConnected===' + vmzLib.isSocketAlive);
         reply(vmzLib.isSocketAlive);
-    })
+    });
 
     socket.on('WRITE_BACK_LOG', function (logBack: WriteLogBackFormat, reply: Function) {
-        const path = `./logs/${logBack.dateFileName}.txt`;
-        fs.appendFileSync(path, logBack.msg+'\r\n');
+        const dir = './logs';
+        if (!fs.existsSync(dir)) { fs.mkdirSync(dir); }
+        const path = dir + `/${logBack.dateFileName}.txt`;
+        fs.appendFileSync(path, logBack.msg + '\r\n');
     });
     socket.on('OPEN_FOLDER', function (data: null, reply: Function) {
+        const dir = './logs';
+        if (!fs.existsSync(dir)) { fs.mkdirSync(dir); }
         child_process.exec('start "" "logs"');
     });
 

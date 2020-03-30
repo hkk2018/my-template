@@ -117,15 +117,32 @@ serv_io.sockets.on('connection', function (socket) {
             reply();
         });
     });
+    socket.on('INIT_VMZ', function (data, reply) {
+        console.log('INIT_VMZ');
+        vmz_1.vmzLib.reqVmzP('vmzinit').then(function () {
+            reply();
+        }).catch(function (errMsg) {
+            exports.cmsLib.sendErrLog(errMsg);
+            reply();
+        });
+    });
     socket.on('VMZ_CONNECTION_STATE', function (data, reply) {
         console.log('VMZ connection state checked by CMS: isConnected===' + vmz_1.vmzLib.isSocketAlive);
         reply(vmz_1.vmzLib.isSocketAlive);
     });
     socket.on('WRITE_BACK_LOG', function (logBack, reply) {
-        var path = "./logs/" + logBack.dateFileName + ".txt";
+        var dir = './logs';
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        var path = dir + ("/" + logBack.dateFileName + ".txt");
         fs.appendFileSync(path, logBack.msg + '\r\n');
     });
     socket.on('OPEN_FOLDER', function (data, reply) {
+        var dir = './logs';
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
         child_process.exec('start "" "logs"');
     });
     // //傳訊息給客戶端

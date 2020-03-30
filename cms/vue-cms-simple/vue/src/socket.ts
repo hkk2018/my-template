@@ -29,8 +29,9 @@ socket.on('DATA_LOG', function (log: string, reply: Function) {
 })
 socket.on('ERR_LOG', function (log: string, reply: Function) {
     mainService.handleLogs(log, true);
+    if (mainData.user && mainData.isSystemRunning) mainService.alert('動作中斷，請按AUTO繼續或INITIAL重置');
     mainData.isSystemRunning = false;
-    if (mainData.user) mainService.alert('動作中斷，請按AUTO繼續或INITIAL重置');
+
 })
 
 socket.on('PROCESS_DONE', function (log: string, reply: Function) {
@@ -49,12 +50,12 @@ socket.on('PROCESS_DONE', function (log: string, reply: Function) {
 
 
 socket.on('ASK_KEY_IN_NUMBER', function (askText: string, reply: Function) {
-    reply(askNumber(askText));
+    reply(askWaferId(askText));
 
-    function askNumber(askText?: string) {
-        let numberStr = prompt(askText ? askText : '格式錯誤，請重新輸入:'); //取消則為null
-        if (numberStr === null || isNaN(parseInt(numberStr))) return askNumber();
-        else return numberStr;
+    function askWaferId(askText?: string): string {
+        let idStr = prompt(askText ? askText : '格式錯誤，請重新輸入:'); //取消則為null
+        if (idStr === null ||idStr === ''|| idStr.toLowerCase().includes('wafer') || idStr.includes(' ')) return askWaferId();
+        else return idStr;
     }
 });
 
@@ -66,6 +67,6 @@ export let socketLib = {
     }
 }
 
-type EventName = 'INIT' | 'AUTO' | 'STOP'|'WRITE_BACK_LOG'|'OPEN_FOLDER';
+type EventName = 'INIT' | 'AUTO' | 'STOP' | 'WRITE_BACK_LOG' | 'OPEN_FOLDER'|'INIT_VMZ';
 
 

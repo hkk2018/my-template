@@ -22,6 +22,7 @@ export let mainService = {
                 }
             },
             (errMsg: string) => {
+                mainState.pauseInformCmsRes();//告訴前端機器正在作的事情真的停了，前端可以繼續按別的按鈕(按下stop之後也可能走這條所以這邊也要補這行)
                 onExecStepErr(errMsg);//致使暫停
             }
         )

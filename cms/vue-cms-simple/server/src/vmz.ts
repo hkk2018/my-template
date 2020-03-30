@@ -7,13 +7,16 @@ export let vmzLib = {
     isSocketAlive: false,
     resolveFunc: (() => { }) as any,
     //直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於ExecResult之msg中，以便後續處裡
-    reqVmzP(command: 'getstation' | 'startw' | 'starto' | 'startv'): Promise<string> {
+    reqVmzP(command: 'getstation' | 'startw' | 'starto' | 'startv'|'vmzinit'): Promise<string> {
         return new Promise((res: (str: string) => void, rej) => {
             //建立socket過且處於連線中才可調用此函數
             if (vmzLib.isSocketAlive) {
                 cmsLib.sendDataLog('Execute(to VMZ): '+command);
                 vmzLib.vmzSocket?.write(command);//基本上alive的情況就必有
                 vmzLib.resolveFunc = res;
+                setTimeout(() => {
+					rej('vmz連線超時，請重新連線')
+				}, 10000);
             }
             else rej('未連線至vmz')
         }).then((stringFromVmz: string) => {
@@ -41,7 +44,7 @@ server.on('connection', function (socket) {
     cmsLib.tellVmzConnectingState(true);
 
     //write
-    socket.write('Hello, client.');
+    // socket.write('Hello, client.');
 
     //receive
     socket.on('data', function (data) {

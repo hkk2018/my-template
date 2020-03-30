@@ -32,6 +32,14 @@
           type="button"
           class="controlBut init"
         >INITIAL</div>
+        <br />
+        <div
+          :class="{disabled:isDisabled||isSystemRunning}"
+          :disabled="isDisabled||isSystemRunning"
+          @click="clickInitVmz"
+          type="button"
+          class="controlBut vmzinit"
+        >VMZ INIT</div>
       </div>
       <div class="connectionTip" :class="{connecting:isVmzConnecting}">VMZ Connection</div>
     </div>
@@ -113,7 +121,7 @@ export default Vue.extend({
       // }
     },
     clickInit() {
-      if (this.isDisabled|| mainData.isSystemRunning) return
+      if (this.isDisabled || mainData.isSystemRunning) return
       if (socketLib.socket.disconnected) {
         //雖然發送時有檢查，但由於有些未跟系統確認就寫定的邏輯，遇到未連線的系統行為會異常，所以還是先於任何按鈕邏輯作檢查
         mainService.alert('尚未連線至系統');
@@ -139,6 +147,18 @@ export default Vue.extend({
         mainData.isSystemRunning = false;
         mainService.alert('已暫停，請按AUTO繼續或INITIAL重置');
       });
+    },
+    clickInitVmz() {
+      if (this.isDisabled || mainData.isSystemRunning) return
+      if (socketLib.socket.disconnected) {
+        //雖然發送時有檢查，但由於有些未跟系統確認就寫定的邏輯，遇到未連線的系統行為會異常，所以還是先於任何按鈕邏輯作檢查
+        mainService.alert('尚未連線至系統');
+        return;
+      }
+      this.isDisabled = true;
+      socketLib.emitEvent('INIT_VMZ', null, () => {
+        this.isDisabled = false;
+      })
     },
     openLogFolder() {
 
@@ -277,6 +297,9 @@ export default Vue.extend({
 .controlBut.init {
   background-color: rgb(99, 194, 222);
 }
+.controlBut.vmzinit {
+  background-color: rgb(200, 206, 211);
+}
 .controlBut.disabled {
   opacity: 0.5;
 }
@@ -286,7 +309,7 @@ export default Vue.extend({
   // padding: 1rem;
   // text-align: center;
 
-    width: 7rem;
+  width: 7rem;
   cursor: pointer;
   user-select: none;
   border: 1px solid var(--border);

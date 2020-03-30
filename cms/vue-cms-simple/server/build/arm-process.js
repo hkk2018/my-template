@@ -20,18 +20,33 @@ exports.roboArmLib = {
     strStarter: 'SVON',
     strStarter2: 'HOM',
     roboArmSocket: null,
+    isSocketAlive: false,
+    reconnectionTryResolveFunc: function () { },
     resolveFunc: (function () { }),
     //直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於VmzReply之msg中，以便後續處裡
     reqArmP: function (command) {
         return new Promise(function (res, rej) {
-            //建立socket過且處於連線中才可調用此函數
-            if (exports.roboArmLib.roboArmSocket != null) {
-                exports.roboArmLib.roboArmSocket.write('STAT\r\n', 'ascii');
+            //每次開工前先檢查，如果沒連線要幫連
+            if (exports.roboArmLib.isSocketAlive)
+                res();
+            else {
+                cms_1.cmsLib.sendDataLog('未連線至機械手臂，嘗試重新連線中...');
+                exports.roboArmLib.reconnectionTryResolveFunc = res;
+                exports.roboArmLib.connectToArm();
+                setTimeout(function () {
+                    rej('機械手臂連線超時，請重新連線');
+                }, 10000);
+            }
+        }).then(function () {
+            return new Promise(function (res, rej) {
+                var _a;
+                (_a = exports.roboArmLib.roboArmSocket) === null || _a === void 0 ? void 0 : _a.write('STAT\r\n', 'ascii'); //基本上已經非null了
                 // cmsLib.sendDataLog('STAT');
                 exports.roboArmLib.resolveFunc = res;
-            }
-            else
-                rej('未連線至機械手臂');
+                setTimeout(function () {
+                    rej('機械手臂連線超時，請重新連線');
+                }, 10000);
+            });
         }).then(function (stringFromArm) {
             if (stringFromArm === '?')
                 return Promise.reject('Failed to chceck arm stat.');
@@ -44,6 +59,9 @@ exports.roboArmLib = {
                     command += '\r\n';
                     (_a = exports.roboArmLib.roboArmSocket) === null || _a === void 0 ? void 0 : _a.write(command, 'ascii'); //基本上已經非null了
                     exports.roboArmLib.resolveFunc = res1;
+                    setTimeout(function () {
+                        rej1('機械手臂連線超時，請重新連線');
+                    }, 10000);
                 });
             }
         }).then(function (stringFromArm) {
@@ -61,6 +79,8 @@ exports.roboArmLib = {
             cms_1.cmsLib.sendDataLog(succMsg);
             console.log(succMsg);
             exports.roboArmLib.roboArmSocket = socket;
+            exports.roboArmLib.isSocketAlive = true;
+            exports.roboArmLib.reconnectionTryResolveFunc();
             //---listening
             socket.on('data', function (data) {
                 //remove \r\n
@@ -71,6 +91,10 @@ exports.roboArmLib = {
                 exports.roboArmLib.resolveFunc(breakLineRemovedData); //送資料回Promise
                 console.log(breakLineRemovedData);
                 // socket.end();
+            });
+            socket.on('close', function () {
+                console.log('arm is disconnected from server');
+                exports.roboArmLib.isSocketAlive = false;
             });
             //---
             /*
@@ -169,7 +193,7 @@ exports.roboArmLib = {
 // 各種抓不到錯誤導致crash，但這個可以
 // https://stackoverflow.com/questions/59463127/how-to-catch-the-throw-er-unhandled-error-event-in-other-peoples-apis-c
 process.on('uncaughtException', function (err) {
-    cms_1.cmsLib.sendErrLog('手臂連線錯誤: ' + JSON.stringify(err));
+    cms_1.cmsLib.sendErrLog('Exception: ' + JSON.stringify(err));
     console.log(err);
 });
 //--- unused legacy

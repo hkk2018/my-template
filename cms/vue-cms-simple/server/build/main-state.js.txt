@@ -72,14 +72,14 @@ function handleWaferSizeProcP(stationIndex) {
                                     cms_1.cmsLib.sendDataLog('waferId: ' + waferId);
                                     return 'get and show waferId sucess';
                                 }); });
-                                // // only ask for number
-                                // taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP()),
-                                //失敗的話會從輸入數字重來
-                                taskPFuncsToAdd.push(function () { return cms_1.cmsLib.askKeyInNumberP().then(function (numberStr) {
-                                    console.log('number input from cms: ' + numberStr);
-                                    return vmz_1.vmzLib.reqVmzP('waferid ' + numberStr);
-                                }); });
-                                taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP('PUT F, 1'); });
+                                // only ask for number
+                                taskPFuncsToAdd.push(function () { return cms_1.cmsLib.askKeyInNumberP(); }),
+                                    // //失敗的話會從輸入數字重來
+                                    // taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP().then(numberStr => {
+                                    //     console.log('number input from cms: ' + numberStr);
+                                    //     return vmzLib.reqVmzP(numberStr as any);
+                                    // }));
+                                    taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP('PUT F, 1'); });
                                 taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('startv'); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP('GET F, 1'); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("PUT " + stationSymbolUpperCase + ", " + (i + 1)); });

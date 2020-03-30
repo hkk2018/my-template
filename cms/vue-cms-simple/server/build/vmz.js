@@ -23,6 +23,9 @@ exports.vmzLib = {
                 cms_1.cmsLib.sendDataLog('Execute(to VMZ): ' + command);
                 (_a = exports.vmzLib.vmzSocket) === null || _a === void 0 ? void 0 : _a.write(command); //基本上alive的情況就必有
                 exports.vmzLib.resolveFunc = res;
+                setTimeout(function () {
+                    rej('vmz連線超時，請重新連線');
+                }, 10000);
             }
             else
                 rej('未連線至vmz');
@@ -49,7 +52,7 @@ server.on('connection', function (socket) {
     exports.vmzLib.isSocketAlive = true;
     cms_1.cmsLib.tellVmzConnectingState(true);
     //write
-    socket.write('Hello, client.');
+    // socket.write('Hello, client.');
     //receive
     socket.on('data', function (data) {
         var dataStr = data.toString().replace('\r\n', '');

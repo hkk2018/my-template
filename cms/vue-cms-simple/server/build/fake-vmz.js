@@ -20,6 +20,7 @@ var inputStr = ['getstation', 'startw', 'starto', 'startv']; //w=wheel, o=orc, v
 var outputStr = ['A4B6C0', 'WaferID123', 'finish', 'ng', 'dooropen'];
 var socket = net.createConnection(8124);
 socket.on('connect', function () {
+    console.log('fake-vmz started and connected.');
     setInterval(function () {
         socket.write('dooropen'); //dooropen
     }, 100000 * Math.random());
@@ -34,7 +35,9 @@ socket.on('connect', function () {
             socket.write(output('WaferID123')); //wafer id
         else if (dataStr == 'startv')
             socket.write(output('finish')); //finish
-        else if (!isNaN(parseInt(data)))
+        else if (dataStr == 'vmzinit')
+            socket.write(output('finish')); //finish
+        else if (dataStr.slice(0, 8) === 'waferid ')
             socket.write(output('finish')); //response to wafer ID input
         else
             socket.write('ng');

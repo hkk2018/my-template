@@ -14,17 +14,31 @@ export let roboArmLib = {
 	strStarter: 'SVON', //on
 	strStarter2: 'HOM', //home
 	roboArmSocket: null as net.Socket | null,
+	isSocketAlive: false,
+	reconnectionTryResolveFunc: () => { },
 	resolveFunc: (() => { }) as any,
 	//直接對vmz發送start訊息，vmz回傳的字串若非ng即表示成功，並將此回傳字串放於VmzReply之msg中，以便後續處裡
 	reqArmP(command: string): Promise<string> {
-		return new Promise((res: (str: string) => void, rej) => {
-			//建立socket過且處於連線中才可調用此函數
-			if (roboArmLib.roboArmSocket != null) {
-				roboArmLib.roboArmSocket.write('STAT\r\n', 'ascii');
+		return new Promise((res, rej) => {
+			//每次開工前先檢查，如果沒連線要幫連
+			if (roboArmLib.isSocketAlive) res();
+			else {
+				cmsLib.sendDataLog('未連線至機械手臂，嘗試重新連線中...');
+				roboArmLib.reconnectionTryResolveFunc = res;
+				roboArmLib.connectToArm();
+				setTimeout(() => {
+					rej('機械手臂連線超時，請重新連線')
+				}, 10000);
+			}
+		}).then(() => {
+			return new Promise((res: (str: string) => void, rej) => {
+				roboArmLib.roboArmSocket?.write('STAT\r\n', 'ascii');//基本上已經非null了
 				// cmsLib.sendDataLog('STAT');
 				roboArmLib.resolveFunc = res;
-			}
-			else rej('未連線至機械手臂')
+				setTimeout(() => {
+					rej('機械手臂連線超時，請重新連線')
+				}, 10000);
+			})
 		}).then((stringFromArm) => {
 			if (stringFromArm === '?') return Promise.reject('Failed to chceck arm stat.')
 			else {
@@ -35,6 +49,9 @@ export let roboArmLib = {
 					command += '\r\n';
 					roboArmLib.roboArmSocket?.write(command, 'ascii');//基本上已經非null了
 					roboArmLib.resolveFunc = res1;
+					setTimeout(() => {
+						rej1('機械手臂連線超時，請重新連線')
+					}, 10000);
 				})
 			}
 		}).then((stringFromArm: string) => {
@@ -50,7 +67,8 @@ export let roboArmLib = {
 			cmsLib.sendDataLog(succMsg);
 			console.log(succMsg);
 			roboArmLib.roboArmSocket = socket;
-
+			roboArmLib.isSocketAlive = true;
+			roboArmLib.reconnectionTryResolveFunc();
 			//---listening
 			socket.on('data', function (data) {
 				//remove \r\n
@@ -62,6 +80,12 @@ export let roboArmLib = {
 				console.log(breakLineRemovedData);
 
 				// socket.end();
+			});
+
+			socket.on('close', () => {
+				console.log('arm is disconnected from server');
+				roboArmLib.isSocketAlive = false;
+
 			});
 			//---
 			/*
@@ -162,7 +186,7 @@ export let roboArmLib = {
 // 各種抓不到錯誤導致crash，但這個可以
 // https://stackoverflow.com/questions/59463127/how-to-catch-the-throw-er-unhandled-error-event-in-other-peoples-apis-c
 process.on('uncaughtException', function (err) {
-	cmsLib.sendErrLog('手臂連線錯誤: ' + JSON.stringify(err));
+	cmsLib.sendErrLog('Exception: ' + JSON.stringify(err));
 	console.log(err)
 });
 
