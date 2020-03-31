@@ -65,18 +65,17 @@ function handleWaferSizeProcP(stationIndex: 0 | 1 | 2): Promise<string> {
                                 taskPFuncsToAdd.push(() => vmzLib.reqVmzP('startw'));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP(`GET D, 1`));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP(`MTCS E`));
-
-                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP('starto').then(waferId => {
-                                    cmsLib.sendDataLog('waferId: ' + waferId);
-                                    return 'get and show waferId sucess';
-                                }));
                                 // // only ask for number
                                 // taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP()),
                                 //失敗的話會從輸入數字重來
-                                taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP().then(numberStr => {
-                                    console.log('number input from cms: ' + numberStr);
-                                    return vmzLib.reqVmzP('waferid ' + numberStr as any);
-                                }));
+                                taskPFuncsToAdd.push(() => vmzLib.reqVmzP('starto').then(
+                                    waferId => {
+                                        cmsLib.sendDataLog('waferId: ' + waferId);
+                                        return 'get and show waferId sucess';
+                                    },
+                                    stringFromVmz => askIdAndTellVmzP()
+                                ));
+
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP('PUT F, 1'));
                                 taskPFuncsToAdd.push(() => vmzLib.reqVmzP('startv'));
                                 taskPFuncsToAdd.push(() => roboArmLib.reqArmP('GET F, 1'));
@@ -97,4 +96,14 @@ function handleWaferSizeProcP(stationIndex: 0 | 1 | 2): Promise<string> {
             return 'success to set wafer size and added move task into queue';
         });
     }
+}
+
+function askIdAndTellVmzP(): Promise<string> {
+    return cmsLib.askKeyInNumberP().then(numberStr => {
+        console.log('number input from cms: ' + numberStr);
+        return vmzLib.reqVmzP('waferid ' + numberStr as any).then(
+            () => 'waferid to vmz is reconized',
+            () => askIdAndTellVmzP()
+        );
+    })
 }

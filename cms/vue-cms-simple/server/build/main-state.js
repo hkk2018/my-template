@@ -68,17 +68,13 @@ function handleWaferSizeProcP(stationIndex) {
                                 taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('startw'); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("GET D, 1"); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP("MTCS E"); });
-                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('starto').then(function (waferId) {
-                                    cms_1.cmsLib.sendDataLog('waferId: ' + waferId);
-                                    return 'get and show waferId sucess';
-                                }); });
                                 // // only ask for number
                                 // taskPFuncsToAdd.push(() => cmsLib.askKeyInNumberP()),
                                 //失敗的話會從輸入數字重來
-                                taskPFuncsToAdd.push(function () { return cms_1.cmsLib.askKeyInNumberP().then(function (numberStr) {
-                                    console.log('number input from cms: ' + numberStr);
-                                    return vmz_1.vmzLib.reqVmzP('waferid ' + numberStr);
-                                }); });
+                                taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('starto').then(function (waferId) {
+                                    cms_1.cmsLib.sendDataLog('waferId: ' + waferId);
+                                    return 'get and show waferId sucess';
+                                }, function (stringFromVmz) { return askIdAndTellVmzP(); }); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP('PUT F, 1'); });
                                 taskPFuncsToAdd.push(function () { return vmz_1.vmzLib.reqVmzP('startv'); });
                                 taskPFuncsToAdd.push(function () { return arm_process_1.roboArmLib.reqArmP('GET F, 1'); });
@@ -102,4 +98,10 @@ function handleWaferSizeProcP(stationIndex) {
             return 'success to set wafer size and added move task into queue';
         });
     }
+}
+function askIdAndTellVmzP() {
+    return cms_1.cmsLib.askKeyInNumberP().then(function (numberStr) {
+        console.log('number input from cms: ' + numberStr);
+        return vmz_1.vmzLib.reqVmzP('waferid ' + numberStr).then(function () { return 'waferid to vmz is reconized'; }, function () { return askIdAndTellVmzP(); });
+    });
 }

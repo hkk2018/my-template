@@ -7,6 +7,7 @@ import * as net from 'net';
 
 let station = 'C4B6A0';
 let pNg = 0;
+let scanWaferIdErrP = 0.5;
 let isTestEndConnection = false;
 //for reference only
 let inputStr = ['getstation', 'startw', 'starto', 'startv']; //w=wheel, o=orc, v=vmz
@@ -23,11 +24,11 @@ socket.on('connect', () => {
         console.log(dataStr);
         if (dataStr == 'getstation') socket.write(output(station)); //station
         else if (dataStr == 'startw') socket.write(output('finish')); //finish wheel
-        else if (dataStr == 'starto') socket.write(output('WaferID123')); //wafer id
+        else if (dataStr == 'starto') socket.write(output(Math.random() < scanWaferIdErrP ? 'ng' : 'WaferID123')); //wafer id
         else if (dataStr == 'startv') socket.write(output('finish')); //finish
         else if (dataStr == 'vmzinit') socket.write(output('finish')); //finish
-        else if (dataStr.slice(0,8)==='waferid ') socket.write(output('finish')); //response to wafer ID input
-        else socket.write('ng'); 
+        else if (dataStr.slice(0, 8) === 'waferid ') socket.write(output('finish')); //response to wafer ID input
+        else socket.write('ng');
     });
 
     if (isTestEndConnection) setTimeout(() => {

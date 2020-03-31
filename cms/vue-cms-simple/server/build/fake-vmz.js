@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var net = __importStar(require("net"));
 var station = 'C4B6A0';
 var pNg = 0;
+var scanWaferIdErrP = 0.5;
 var isTestEndConnection = false;
 //for reference only
 var inputStr = ['getstation', 'startw', 'starto', 'startv']; //w=wheel, o=orc, v=vmz
@@ -32,7 +33,7 @@ socket.on('connect', function () {
         else if (dataStr == 'startw')
             socket.write(output('finish')); //finish wheel
         else if (dataStr == 'starto')
-            socket.write(output('WaferID123')); //wafer id
+            socket.write(output(Math.random() < scanWaferIdErrP ? 'ng' : 'WaferID123')); //wafer id
         else if (dataStr == 'startv')
             socket.write(output('finish')); //finish
         else if (dataStr == 'vmzinit')
