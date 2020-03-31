@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var net = __importStar(require("net"));
 var cms_1 = require("./cms");
 var main_state_1 = require("./main-state");
+var setting_1 = require("./setting");
 exports.vmzLib = {
     vmzSocket: null,
     isSocketAlive: false,
@@ -25,7 +26,7 @@ exports.vmzLib = {
                 exports.vmzLib.resolveFunc = res;
                 setTimeout(function () {
                     rej('vmz連線超時，請重新連線');
-                }, 10000);
+                }, setting_1.setting.connectionTimeout);
             }
             else
                 rej('未連線至vmz');

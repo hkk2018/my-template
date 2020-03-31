@@ -9,10 +9,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var net = __importStar(require("net"));
 var cms_1 = require("./cms");
+var setting_1 = require("./setting");
 //設定
 var port = 8001; // Datalogger port
-// const host = '192.168.29.130';    // Datalogger IP address
-var host = 'localhost';
+var host = '192.168.29.130'; // Datalogger IP address
+// const host = 'localhost';
 //指令
 console.log('program starts');
 var socket;
@@ -35,7 +36,7 @@ exports.roboArmLib = {
                 exports.roboArmLib.connectToArm();
                 setTimeout(function () {
                     rej('機械手臂連線超時，請重新連線');
-                }, 10000);
+                }, setting_1.setting.connectionTimeout);
             }
         }).then(function () {
             return new Promise(function (res, rej) {
@@ -45,7 +46,7 @@ exports.roboArmLib = {
                 exports.roboArmLib.resolveFunc = res;
                 setTimeout(function () {
                     rej('機械手臂連線超時，請重新連線');
-                }, 10000);
+                }, setting_1.setting.connectionTimeout);
             });
         }).then(function (stringFromArm) {
             if (stringFromArm === '?')
@@ -61,7 +62,7 @@ exports.roboArmLib = {
                     exports.roboArmLib.resolveFunc = res1;
                     setTimeout(function () {
                         rej1('機械手臂連線超時，請重新連線');
-                    }, 10000);
+                    }, setting_1.setting.connectionTimeout);
                 });
             }
         }).then(function (stringFromArm) {

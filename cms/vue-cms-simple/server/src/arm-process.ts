@@ -1,9 +1,10 @@
 import * as net from 'net';
 import { cmsLib } from './cms';
+import { setting } from './setting';
 //設定
 const port = 8001;    // Datalogger port
-// const host = '192.168.29.130';    // Datalogger IP address
-const host = 'localhost';
+const host = '192.168.29.130';    // Datalogger IP address
+// const host = 'localhost';
 
 //指令
 console.log('program starts');
@@ -28,7 +29,7 @@ export let roboArmLib = {
 				roboArmLib.connectToArm();
 				setTimeout(() => {
 					rej('機械手臂連線超時，請重新連線')
-				}, 10000);
+				}, setting.connectionTimeout);
 			}
 		}).then(() => {
 			return new Promise((res: (str: string) => void, rej) => {
@@ -37,7 +38,7 @@ export let roboArmLib = {
 				roboArmLib.resolveFunc = res;
 				setTimeout(() => {
 					rej('機械手臂連線超時，請重新連線')
-				}, 10000);
+				}, setting.connectionTimeout);
 			})
 		}).then((stringFromArm) => {
 			if (stringFromArm === '?') return Promise.reject('Failed to chceck arm stat.')
@@ -51,7 +52,7 @@ export let roboArmLib = {
 					roboArmLib.resolveFunc = res1;
 					setTimeout(() => {
 						rej1('機械手臂連線超時，請重新連線')
-					}, 10000);
+					}, setting.connectionTimeout);
 				})
 			}
 		}).then((stringFromArm: string) => {

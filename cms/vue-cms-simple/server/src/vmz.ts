@@ -1,6 +1,7 @@
 import * as net from 'net';
 import { cmsLib } from './cms';
 import { mainState } from './main-state';
+import { setting } from './setting';
 
 export let vmzLib = {
     vmzSocket: null as net.Socket | null,
@@ -16,7 +17,7 @@ export let vmzLib = {
                 vmzLib.resolveFunc = res;
                 setTimeout(() => {
 					rej('vmz連線超時，請重新連線')
-				}, 10000);
+				}, setting.connectionTimeout);
             }
             else rej('未連線至vmz')
         }).then((stringFromVmz: string) => {
