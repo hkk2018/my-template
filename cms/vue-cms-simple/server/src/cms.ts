@@ -80,7 +80,7 @@ serv_io.sockets.on('connection', function (socket) {
             console.log(roboArmLib.strStarter2);
             return roboArmLib.reqArmP(roboArmLib.strStarter2);
         }).then(() => {
-            roboArmLib.reqArmP('STAT' + '\r\n').then(msg => {
+            return roboArmLib.reqArmP('STAT' + '\r\n').then(msg => {
                 console.log(msg)
                 if (mainService.hex2bin(msg)[5] === '0') {
                     reply({ isErr: false, msg: msg } as RespObj);

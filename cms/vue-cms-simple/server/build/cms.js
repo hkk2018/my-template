@@ -87,7 +87,7 @@ serv_io.sockets.on('connection', function (socket) {
             console.log(arm_process_1.roboArmLib.strStarter2);
             return arm_process_1.roboArmLib.reqArmP(arm_process_1.roboArmLib.strStarter2);
         }).then(function () {
-            arm_process_1.roboArmLib.reqArmP('STAT' + '\r\n').then(function (msg) {
+            return arm_process_1.roboArmLib.reqArmP('STAT' + '\r\n').then(function (msg) {
                 console.log(msg);
                 if (main_service_1.mainService.hex2bin(msg)[5] === '0') {
                     reply({ isErr: false, msg: msg });
