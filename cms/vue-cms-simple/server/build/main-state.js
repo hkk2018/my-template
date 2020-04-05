@@ -14,7 +14,7 @@ exports.mainState = {
         function () { return arm_process_1.roboArmLib.reqArmP(arm_process_1.roboArmLib.strStarter); },
         function () { return arm_process_1.roboArmLib.reqArmP(arm_process_1.roboArmLib.strStarter2); },
         function () { return arm_process_1.roboArmLib.reqArmP('STAT').then(function (msg) {
-            if (main_service_1.mainService.hex2bin(msg)[5] === '0')
+            if (main_service_1.mainService.hex2bin(msg)[6] === '0')
                 return;
             else
                 return Promise.reject(msg);

@@ -13,7 +13,7 @@ export let mainState = {
         () => roboArmLib.reqArmP(roboArmLib.strStarter),
         () => roboArmLib.reqArmP(roboArmLib.strStarter2),
         () => roboArmLib.reqArmP('STAT').then(msg => {
-            if (mainService.hex2bin(msg)[5] === '0') return;
+            if (mainService.hex2bin(msg)[6] === '0') return;
             else return Promise.reject(msg);
         }),
         () => roboArmLib.reqArmP('STAT').then(msg => {
