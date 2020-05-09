@@ -7,38 +7,37 @@ interface ModalConfig {
     isConfirmCancel: Boolean,
     title: string,
     body: string,
-    resFunc: Function
+    resFunc: Function,
+    buttons: string[]
 }
 export enum CreateType {
     null,
     default
 }
 
+let modalP: Promise<any> = new Promise(res => {
+    res();
+});
+
 export let mainService = {
     vm: null,
-    alert(body: string, title: string = '提示'): Promise<true> {
-        let modalConfig: ModalConfig = (mainService.vm as any).$children[0].modalConfig;
-        modalConfig.isShowModal = true;
-        modalConfig.isConfirm = false;
-        modalConfig.title = title;
-        modalConfig.body = body;
-        console.log(modalConfig);
-
-        return new Promise(res => {
+    callModal(body: string, buttons: string[], title: string): Promise<number> {
+        modalP = modalP.then(() => new Promise(res => {
+            let modalConfig: ModalConfig = (mainService.vm as any).$children[0].modalConfig;
+            modalConfig.isShowModal = true;
+            modalConfig.title = title;
+            modalConfig.body = body;
+            modalConfig.buttons = buttons;
             modalConfig.resFunc = res;
-        })
+        }))
+        return modalP
     },
-    confirm(body: string, title: string = '系統訊息', isConfirmCancel: boolean = true): Promise<boolean> {
-        let modalConfig: ModalConfig = (mainService.vm as any).$children[0].modalConfig;
-        modalConfig.isShowModal = true;
-        modalConfig.isConfirm = true;
-        modalConfig.isConfirmCancel = true;
-        modalConfig.title = title;
-        modalConfig.body = body;
-        return new Promise(res => {
-            modalConfig.resFunc = res;
-            modalConfig.isConfirmCancel = false;
-        })
+    alert(body: string, buttons: string[] = ['確定'], title: string = '提示'): Promise<true> {
+        return mainService.callModal(body, buttons, title).then(() => true);
+    },
+    confirm(body: string, buttons: string[] = ['確定', '取消'], title: string = '提示'): Promise<boolean> {
+        //選0的時候是回傳true喔因為是選確定
+        return mainService.callModal(body, buttons, title).then((bit: number) => bit === 0 ? true : false);
     },
     inform(str: string) {
         let inform: (str: string) => void = (mainService.vm as any).$children[0].inform;

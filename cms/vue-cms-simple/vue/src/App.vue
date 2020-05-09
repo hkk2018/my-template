@@ -14,11 +14,10 @@
     <ModalVue
       v-bind="{
       isShowModal:modalConfig.isShowModal,
-      isConfirm:modalConfig.isConfirm,
       title:modalConfig.title,
       body:modalConfig.body,
       resFunc:modalConfig.resFunc,
-      isConfirmCancel:modalConfig.isConfirmCancel
+            buttons:modalConfig.buttons
       }"
       @on-modal-close="onModalClose"
     />
@@ -48,10 +47,8 @@ export default Vue.extend({
       //因為login就要用到所以在最上的層級
       modalConfig: {
         isShowModal: false,
-        isConfirm: false,
         title: null,
         body: null,
-        isConfirmCancel:true,
         resFunc: null,
       },
       informConfig: {

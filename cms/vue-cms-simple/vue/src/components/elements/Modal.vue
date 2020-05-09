@@ -4,12 +4,13 @@
       <div class="modalHeader">{{title}}</div>
       <div class="modalBody">{{body}}</div>
       <div class="modalFooter rightAlign">
-        <button class="butSpace primaryBut" @click="clickBut(true)">{{isConfirmCancel?'確定':'是'}}</button>
         <button
-          class="butSpace secondaryBut"
-          v-if="isConfirm"
-          @click="clickBut(false)"
-        >{{isConfirmCancel?'取消':'否'}}</button>
+          class="butSpace"
+          v-for="(but, index) in buttons"
+          :key="index"
+          @click="clickBut(index)"
+          :class="{primaryBut:!getIsSecondaryBut(index),secondaryBut:getIsSecondaryBut(index)}"
+        >{{but}}</button>
       </div>
     </div>
   </div>
@@ -24,19 +25,24 @@ export default Vue.extend({
     title: String,
     body: String,
     isShowModal: Boolean,
-    isConfirm: Boolean,
-    isConfirmCancel: Boolean,
-    resFunc: Function
+    resFunc: Function,
+    buttons: Array
   },
   data() {
     return {}
   },
   methods: {
-    clickBut(isConfirm: boolean) {
+    clickBut(buttonIndex: number) {
       this.$emit('on-modal-close');
-      this.resFunc(isConfirm);
+      this.resFunc(buttonIndex);
+    },
+    getIsSecondaryBut(index:number){
+      return this.buttons.length>1&&index===(this.buttons.length-1)
     }
   },
+  computed:{
+    
+  }
 });
 </script>
 
