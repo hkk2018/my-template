@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <script>
+        let url = 'http://localhost:8080/';
+        // 會跳轉要引入特殊手段
+        // formPost(url);
+        // formPost_tryNotToUseSetAttr(url);//此法跟標準一樣都可以用
+        function formPost(path, params, method = "post") {
+            // The rest of this code assumes you are not using a library.
+            // It can be made less wordy if you use one.
+            let form = document.createElement("form");
+            form.setAttribute("method", method);
+            form.setAttribute("action", path);
+            for (let key in params) {
+                if (params.hasOwnProperty(key)) {
+                    let hiddenField = document.createElement("input");
+                    hiddenField.setAttribute("type", "hidden");
+                    hiddenField.setAttribute("name", key);
+                    hiddenField.setAttribute("value", params[key]);
+
+                    form.appendChild(hiddenField);
+                }
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }
+        function formPost_tryNotToUseSetAttr(path, params, method = "post") {
+            // The rest of this code assumes you are not using a library.
+            // It can be made less wordy if you use one.
+            let form = document.createElement("form");
+            form.method = method;
+            form.action = path;
+            for (let key in params) {
+                if (params.hasOwnProperty(key)) {
+                    let hiddenField = document.createElement("input");
+                    hiddenField.type = "hidden";
+                    hiddenField.name = key;
+                    hiddenField.value = params[key];
+                    form.appendChild(hiddenField);
+                }
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        execAjax(url).then(result => {
+            console.log(result)
+        });
+
+        function execAjax(url, method = 'POST') {
+            return new Promise((resolve, reject) => {
+                let xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    // console.log(xhr.readyState);
+                    // console.log(xhr.status);
+                    if (this.readyState === 4)
+                        if (this.status === 200) {
+                            console.log(this.response);
+                            console.log(this.responseType);
+                            let result;
+                            try {
+                                result = JSON.parse(this.response);
+                                resolve(result);
+                            }
+                            catch (error) { reject(error) };
+                        }
+                        else reject(this.status);
+                };
+                xhr.open(method, url);
+                xhr.send();
+            });
+        }
+    </script>
+</body>
+
+</html>

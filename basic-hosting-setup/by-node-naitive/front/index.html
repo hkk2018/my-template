@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset=utf-8>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>special effect</title>
+
+	<!-- libraries -->
+	<script src="pixi.min.js"></script>
+
+	<script>console.log(PIXI.ticker.Ticker)</script>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.8.5/pixi.min.js"></script> -->
+	<script src='https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js'></script>
+	<script type="module" src="build/se.lib.js"></script>
+
+	<!-- styles -->
+	<!-- <link rel="stylesheet" href="css/style.css"> -->
+
+	<!-- browser check -->
+
+	<!-- main -->
+	<!-- <script type="module" src="bundle.min.js"></script> -->
+	<!-- <script type="module" src="build/main.js"></script> -->
+
+	<style>
+		html {
+			background: #333 url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/68397/forest-fly-agaric-fog-moss-fliegenpilz.jpg) no-repeat center bottom;
+			background-size: cover;
+		}
+
+		html,
+		body {
+			height: 100%;
+			overflow: hidden;
+		}
+
+		.demoBox {
+			width: 30vh;
+			height: 20vh;
+			background-color: blue;
+		}
+
+		.a1 {
+			border-radius: 20%;
+		}
+	</style>
+
+</head>
+
+<body>
+	<div class='demoBox a1' id='a1'>按我：粒子繞外圍跑</div>
+	<!-- <div class='demoBox' id='a1' style="visibility: hidden;">a1</div> -->
+	<div class='demoBox' id='a2'>按我：拉炮效果</div>
+	<!-- <input type="text" placeholder="Type for pixie dust..."/> -->
+	<div class='demoBox' id='a3'>按我: 按鈕週邊放出受內聚力吸引而交錯、逐漸淡出的粒子</div>
+
+	<script>
+		let url = 'http://localhost:8080/';
+		execAjax(url).then(result => {
+			console.log(result)
+		});
+
+		function execAjax(url, method = 'POST') {
+			return new Promise((resolve, reject) => {
+				let xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = function () {
+					// console.log(xhr.readyState);
+					// console.log(xhr.status);
+					if (this.readyState === 4)
+						if (this.status === 200) {
+							console.log(this.response);
+							console.log(this.responseType);
+							let result;
+							try {
+								result = JSON.parse(this.response);
+								resolve(result);
+							}
+							catch (error) { reject(error) };
+						}
+						else reject(this.status);
+				};
+				xhr.open(method, url);
+				xhr.send();
+			});
+		}
+	</script>
+</body>
+
+</html>
