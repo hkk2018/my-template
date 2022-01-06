@@ -36,6 +36,7 @@
 		}
 
 		.demoBox {
+			color: white;
 			width: 30vh;
 			height: 20vh;
 			background-color: blue;
@@ -55,8 +56,9 @@
 	<!-- <input type="text" placeholder="Type for pixie dust..."/> -->
 	<div class='demoBox' id='a3'>按我: 按鈕週邊放出受內聚力吸引而交錯、逐漸淡出的粒子</div>
 
+	<button id="getI"></button>
 	<script>
-		let url = 'http://localhost:8080/';
+		let url = 'http://localhost:8080/assdsad';
 		execAjax(url).then(result => {
 			console.log(result)
 		});
@@ -81,6 +83,7 @@
 						else reject(this.status);
 				};
 				xhr.open(method, url);
+				// if(method==='POST')xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 				xhr.send();
 			});
 		}

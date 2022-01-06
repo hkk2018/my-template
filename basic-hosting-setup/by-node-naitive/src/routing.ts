@@ -23,7 +23,7 @@ export let routing = {
             if (!request.url) return;
 
             console.log('url:' + request.url);
-            // console.log(request.method)
+            console.log(request.method)
 
             //基本上只有載入的時候用get，此外任何資料取得都用post
             if (request.method === 'GET') {
