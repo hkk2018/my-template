@@ -3,4 +3,4 @@
 
 host:
 
-    node build main.js
+    node build/main.js
